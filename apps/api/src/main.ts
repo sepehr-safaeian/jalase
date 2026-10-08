@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'node:path';
 import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 import { ensureAvatarUploadDir } from './auth/avatar-upload.config.js';
 import { ensureRecordingUploadDir } from './transcription/recording-storage.js';
@@ -12,7 +13,10 @@ import { ensureRecordingUploadDir } from './transcription/recording-storage.js';
 async function bootstrap() {
   ensureAvatarUploadDir();
   ensureRecordingUploadDir();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+  app.useLogger(app.get(Logger));
 
   const config = app.get(ConfigService);
   const port = config.get<number>('API_PORT', 3000);
@@ -51,8 +55,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(port, config.get<string>('API_HOST', '0.0.0.0'));
-  console.log(`🚀 API: http://localhost:${port}/api/v1`);
-  console.log(`📚 Swagger: http://localhost:${port}/api/docs`);
+  const logger = app.get(Logger);
+  logger.log(`API: http://localhost:${port}/api/v1`);
+  logger.log(`Swagger: http://localhost:${port}/api/docs`);
 }
 
 await bootstrap();

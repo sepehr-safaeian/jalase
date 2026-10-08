@@ -47,17 +47,17 @@ describe('TranscriptionService', () => {
           {
             id: 't1',
             speakerId: 'speaker_0',
-            speakerLabel: 'گوینده 1',
+            speakerLabel: 'Speaker A',
             startMs: 0,
             endMs: 3000,
-            draftText: 'سل',
-            text: 'سلام',
+            draftText: 'hel',
+            text: 'hello',
             status: 'refined',
             chunkIndex: 0,
           },
         ],
-        draftTranscript: 'گوینده 1: سل',
-        refinedTranscript: 'گوینده 1: سلام',
+        draftTranscript: 'Speaker A: hel',
+        refinedTranscript: 'Speaker A: hello',
       }),
     };
     audioSlice = {
@@ -67,6 +67,9 @@ describe('TranscriptionService', () => {
       reviewTurns: vi.fn(async (turns) => turns),
     };
 
+    const metrics = { record: vi.fn() };
+    const guardrails = { redactForLogs: vi.fn((value: string) => value) };
+
     service = new TranscriptionService(
       notesRepo as never,
       chunksRepo as never,
@@ -74,6 +77,8 @@ describe('TranscriptionService', () => {
       hybridPipeline as never,
       transcriptRefiner as never,
       audioSlice as never,
+      metrics as never,
+      guardrails as never,
     );
   });
 
@@ -161,7 +166,7 @@ describe('TranscriptionService', () => {
     expect(hybridPipeline.processRecording).toHaveBeenCalled();
     expect(transcriptRefiner.reviewTurns).toHaveBeenCalled();
     expect(result.turns?.length).toBe(1);
-    expect(result.fullTranscript).toContain('گوینده 1');
+    expect(result.fullTranscript).toContain('Speaker A');
     expect(note.recordingStatus).toBe('idle');
   });
 });

@@ -5,7 +5,7 @@ import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { MeetingExtractionService } from './meeting-extraction.service.js';
-
+import { GuardrailsService } from '../ai/guardrails/guardrails.service.js';
 import type { Note } from './entities/note.entity.js';
 
 
@@ -108,6 +108,12 @@ describe('MeetingExtractionService', () => {
 
           AVALAI_EXTRACT_ENABLED: 'true',
 
+          AI_LOCALE: 'fa',
+
+          DEFAULT_TIER: 'plus',
+
+          NODE_ENV: 'development',
+
         };
 
         return values[key] ?? fallback ?? '';
@@ -118,12 +124,14 @@ describe('MeetingExtractionService', () => {
 
 
 
+    const guardrails = new GuardrailsService(config as unknown as ConfigService);
+    const metrics = { record: vi.fn() };
+
     service = new MeetingExtractionService(
-
       config as unknown as ConfigService,
-
       notesRepo as never,
-
+      guardrails,
+      metrics as never,
     );
 
   });

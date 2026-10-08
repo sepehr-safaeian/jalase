@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { HealthModule } from './health/health.module.js';
@@ -13,6 +15,8 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
 // Set PAYMENTS_ENABLED=true and uncomment to restore billing:
 // import { PaymentsModule } from './payments/payments.module.js';
 import { TranscriptionModule } from './transcription/transcription.module.js';
+import { ObservabilityModule } from './observability/observability.module.js';
+import { REQUEST_ID_HEADER } from './observability/request-id.middleware.js';
 
 @Module({
   imports: [
@@ -20,6 +24,43 @@ import { TranscriptionModule } from './transcription/transcription.module.js';
       isGlobal: true,
       envFilePath: ['.env', '../../.env'],
     }),
+    LoggerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const isDev = config.get<string>('NODE_ENV') === 'development';
+        const pretty =
+          config.get<string>('LOG_PRETTY', isDev ? 'true' : 'false') === 'true';
+        return {
+          pinoHttp: {
+            level: config.get<string>('LOG_LEVEL', isDev ? 'debug' : 'info'),
+            genReqId: (req, res) => {
+              const existing = req.headers[REQUEST_ID_HEADER];
+              const id =
+                typeof existing === 'string' && existing.trim()
+                  ? existing.trim()
+                  : randomUUID();
+              res.setHeader(REQUEST_ID_HEADER, id);
+              return id;
+            },
+            customProps: (req) => ({
+              requestId: req.id,
+            }),
+            transport: pretty
+              ? {
+                  target: 'pino-pretty',
+                  options: {
+                    singleLine: true,
+                    colorize: true,
+                  },
+                }
+              : undefined,
+            autoLogging: true,
+            quietReqLogger: true,
+          },
+        };
+      },
+    }),
+    ObservabilityModule,
     DatabaseModule,
     HealthModule,
     FeatureFlagsModule,

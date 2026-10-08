@@ -20,6 +20,9 @@ import {
   turnsToFlatTranscript,
   type TranscriptTurn,
 } from '@jalase/shared';
+import { GuardrailsService } from '../ai/guardrails/guardrails.service.js';
+import { MetricsService } from '../observability/metrics.service.js';
+import { PipelineTimer } from '../observability/pipeline-timer.js';
 import { Note } from '../notes/entities/note.entity.js';
 import { NoteRecordingChunk } from './entities/note-recording-chunk.entity.js';
 import { AvalAiService } from './avalai.service.js';
@@ -65,9 +68,26 @@ export class TranscriptionService {
     private readonly hybridPipeline: HybridTranscriptionPipeline,
     private readonly transcriptRefiner: TranscriptRefinerService,
     private readonly audioSlice: AudioSliceService,
+    private readonly metrics: MetricsService,
+    private readonly guardrails: GuardrailsService,
   ) {
     this.hybridEnabled =
       process.env.AVALAI_HYBRID_PIPELINE !== 'false';
+  }
+
+  private logStage(
+    event: ReturnType<PipelineTimer['finish']>,
+  ): void {
+    this.metrics.record(event);
+    this.logger.log(
+      JSON.stringify({
+        msg: 'pipeline.stage',
+        ...event,
+        errorMessage: event.errorMessage
+          ? this.guardrails.redactForLogs(event.errorMessage)
+          : undefined,
+      }),
+    );
   }
 
   async getStatus(
@@ -234,7 +254,7 @@ export class TranscriptionService {
     note.recordingAudioUrl = recordingAudioUrl;
     await this.notesRepo.save(note);
 
-    const startedAt = Date.now();
+    const finalizeTimer = new PipelineTimer();
     this.logger.log(
       `Finalize started note=${noteId} audioBytes=${audio.length} mime=${mimeType}`,
     );
@@ -243,6 +263,7 @@ export class TranscriptionService {
       this.audioSlice.assertAvailable();
 
       let hybridResult;
+      const asrTimer = new PipelineTimer();
       try {
         if (!this.hybridEnabled) {
           throw new Error('Hybrid pipeline disabled');
@@ -254,10 +275,19 @@ export class TranscriptionService {
           chunkIndex: 0,
           chunkStartMs: 0,
         });
-        this.logger.log(
-          `Finalize note=${noteId}: ASR done in ${Date.now() - startedAt}ms turns=${hybridResult.turns.length}`,
+        this.logStage(
+          asrTimer.finish('asr', 'ok', {
+            noteId,
+            counts: { turns: hybridResult.turns.length },
+          }),
         );
       } catch (err) {
+        this.logStage(
+          asrTimer.finish('asr', 'error', {
+            noteId,
+            errorMessage: err instanceof Error ? err.message : String(err),
+          }),
+        );
         this.logger.warn(
           `Finalize transcription failed for note ${noteId}: ${
             err instanceof Error ? err.message : err
@@ -281,6 +311,7 @@ export class TranscriptionService {
           draftText: turn.draftText || turn.text,
         }));
 
+      const reviewTimer = new PipelineTimer();
       this.logger.log(`Finalize note=${noteId}: review started`);
       const reviewedTurns = await this.transcriptRefiner.reviewTurns(
         incomingTurns,
@@ -289,8 +320,11 @@ export class TranscriptionService {
           recentContext: note.transcriptContext,
         },
       );
-      this.logger.log(
-        `Finalize note=${noteId}: review done in ${Date.now() - startedAt}ms`,
+      this.logStage(
+        reviewTimer.finish('review', 'ok', {
+          noteId,
+          counts: { turns: reviewedTurns.length },
+        }),
       );
 
       const flatRefined = turnsToFlatTranscript(reviewedTurns, {
@@ -326,7 +360,14 @@ export class TranscriptionService {
       });
 
       this.logger.log(
-        `Finalize note=${noteId}: completed in ${Date.now() - startedAt}ms`,
+        JSON.stringify({
+          msg: 'pipeline.stage',
+          stage: 'finalize',
+          noteId,
+          durationMs: finalizeTimer.elapsedMs(),
+          outcome: 'ok',
+          counts: { turns: reviewedTurns.length },
+        }),
       );
 
       return {

@@ -1,0 +1,32 @@
+{
+  "name": "@jalase/eval",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Offline evaluation harness for Jalase transcription and meeting insights",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "eval:baseline": "tsx src/run-baseline.ts",
+    "eval:wer": "tsx src/run-baseline.ts --suite=wer",
+    "eval:extractions": "tsx src/run-baseline.ts --suite=extractions",
+    "eval:faithfulness": "tsx src/run-baseline.ts --suite=faithfulness"
+  },
+  "dependencies": {
+    "@jalase/shared": "*"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  }
+}

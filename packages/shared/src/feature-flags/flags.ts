@@ -114,6 +114,12 @@ export const FEATURE_FLAGS: FeatureFlag[] = [
     enabledInDev: true,
   },
   {
+    key: 'ai.guardrails',
+    label: 'AI guardrails',
+    minTier: 'plus',
+    enabledInDev: true,
+  },
+  {
     key: 'meeting.transcript.speaker-mapping',
     label: 'Speaker name mapping',
     minTier: 'plus',

@@ -38,6 +38,10 @@
     "build:shared": "npm run build --workspace=@jalase/shared",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
+    "eval:baseline": "npm run eval:baseline --workspace=@jalase/eval",
+    "eval:wer": "npm run eval:wer --workspace=@jalase/eval",
+    "eval:extractions": "npm run eval:extractions --workspace=@jalase/eval",
+    "eval:faithfulness": "npm run eval:faithfulness --workspace=@jalase/eval",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down"
   },

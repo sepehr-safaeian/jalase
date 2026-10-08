@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module.js';
+import { GuardrailsModule } from '../ai/guardrails/guardrails.module.js';
 import { Note } from '../notes/entities/note.entity.js';
 import { AudioSliceService } from './audio-slice.service.js';
 import { AvalAiService } from './avalai.service.js';
@@ -14,6 +15,7 @@ import { TranscriptionService } from './transcription.service.js';
   imports: [
     TypeOrmModule.forFeature([Note, NoteRecordingChunk]),
     AuthModule,
+    GuardrailsModule,
   ],
   controllers: [TranscriptionController],
   providers: [
