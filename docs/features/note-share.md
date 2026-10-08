@@ -1,24 +1,26 @@
-# اشتراک‌گذاری جلسه
+# Meeting Share
 
-## خلاصه
+## Summary
 
-در صفحه ادیتور جلسه، دکمه **Share** در header باز می‌کند `NoteShareSheet` با گزینه‌های:
+On the meeting editor screen, the **Share** button in the header opens `NoteShareSheet` with these options:
 
-| گزینه | رفتار |
-|-------|--------|
-| کپی | متن کامل + فوتر گوشا در کلیپ‌بورد |
-| دانلود PDF | HTML شکیل → PDF (native: فایل واقعی، web: چاپ) |
-| دانلود MD | فایل `.md` |
-| تلگرام | deep link `t.me/share` |
-| واتساپ | deep link `wa.me` |
+| Option | Behavior |
+|--------|----------|
+| Copy | Full text + Jalase footer to clipboard |
+| Download PDF | Styled HTML to PDF (native: real file, web: print) |
+| Download MD | `.md` file |
+| Telegram | deep link `t.me/share` |
+| WhatsApp | deep link `wa.me` |
 | SMS | `sms:?body=` |
-| سایر روش‌ها | Share sheet سیستم |
+| Other methods | System share sheet |
 
-## فوتر اجباری
+## Required footer
 
-همه خروجی‌ها شامل:
+All exports include:
 
-`ضبط شده توسط گوشا (Goosha.app)`
+`Recorded with Jalase`
+
+(See `GOOSHA_EXPORT_FOOTER` in `packages/shared/src/notes/note-export.ts`.)
 
 ## Shared
 
@@ -35,7 +37,7 @@
 
 `notes.share` (tier: free)
 
-## وابستگی‌ها
+## Dependencies
 
 - `expo-clipboard`
 - `expo-file-system`

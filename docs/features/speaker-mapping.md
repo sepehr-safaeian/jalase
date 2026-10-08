@@ -1,18 +1,18 @@
-# نام‌گذاری گوینندگان رونوشت
+# Transcript Speaker Naming
 
-## خلاصه
+## Summary
 
-کاربر از chip **اعضا** وارد sheet می‌شود و برای هر گوینده شناسایی‌شده (مثل `گوینده A`) نام واقعی (مثل «سپهر صفائیان») می‌نویسد. نام در **کل رونوشت** جایگزین می‌شود:
+From the **Members** chip, the user opens a sheet and assigns a real name (for example "Sepehr Safaian") to each detected speaker (for example `Speaker A`). The name is replaced **throughout the transcript**:
 
 - `transcriptTurns` (API)
 - `transcriptText`
-- بخش «رونوشت جلسه» در Tiptap
-- خروجی Share (MD/PDF)
+- The "Meeting transcript" section in Tiptap
+- Share output (MD/PDF)
 
-## مدل
+## Model
 
-- `notes.speaker_name_mappings_json`: `{ "speaker_0": "سپهر صفائیان" }`
-- `speakerId` پایدار از diarization؛ label پیش‌فرض: `گوینده A` … `Z` سپس عددی
+- `notes.speaker_name_mappings_json`: `{ "speaker_0": "Sepehr Safaian" }`
+- Stable `speakerId` from diarization; default label: `Speaker A` … `Z`, then numeric
 
 ## API
 
@@ -21,15 +21,15 @@
 ```json
 {
   "mappings": {
-    "speaker_0": "سپهر صفائیان",
-    "speaker_1": "علی رضایی"
+    "speaker_0": "Sepehr Safaian",
+    "speaker_1": "Ali Rezaei"
   }
 }
 ```
 
 ## UI
 
-`NoteMembersSheet`: بخش «گوینندگان رونوشت» + بخش اعضای جلسه
+`NoteMembersSheet`: "Transcript speakers" section plus meeting members section
 
 ## Shared
 

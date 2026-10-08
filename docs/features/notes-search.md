@@ -1,17 +1,17 @@
-# جستجوی یادداشت‌ها (Notes Search)
+# Notes Search
 
-## خلاصه
+## Summary
 
-جستجوی کلیدواژه‌ای در تمام یادداشت‌های کاربر با استراتژی دو مرحله‌ای برای کنترل سرعت و بار سرور.
+Keyword search across all of the user's notes using a two-phase strategy to control latency and server load.
 
-## رفتار محصول
+## Product behavior
 
-1. کاربر کلمه می‌نویسد (حداقل ۲ حرف)
-2. **مرحله ۱**: جستجو در جلسات **۳۰ روز اخیر** (`scope=recent`)
-3. **نمایش بیشتر**: صفحه بعد همان بازه، یا گسترش به **جلسات قدیمی‌تر** (`scope=older`)
-4. هر نتیجه snippet و فیلد match (عنوان / متن / رونوشت) دارد
+1. User types a query (minimum 2 characters)
+2. **Phase 1:** Search meetings from the **last 30 days** (`scope=recent`)
+3. **Show more:** Next page in the same range, or expand to **older meetings** (`scope=older`)
+4. Each result includes a snippet and a match field (title / body / transcript)
 
-## فیلدهای searchable
+## Searchable fields
 
 - `title`
 - `content_json`
@@ -22,14 +22,14 @@
 
 ### `GET /api/v1/notes/search`
 
-| Query | نوع | توضیح |
-|-------|-----|-------|
-| `q` | string | کلیدواژه (حداقل ۲ حرف) |
-| `scope` | `recent` \| `older` | پیش‌فرض: `recent` |
-| `cursor` | string | pagination |
-| `limit` | number | پیش‌فرض ۱۵، حداکثر ۵۰ |
+| Query | Type | Description |
+|-------|------|-------------|
+| `q` | string | Keyword (minimum 2 characters) |
+| `scope` | `recent` \| `older` | Default: `recent` |
+| `cursor` | string | Pagination |
+| `limit` | number | Default 15, max 50 |
 
-### پاسخ
+### Response
 
 ```json
 {
@@ -37,33 +37,33 @@
   "hasMore": true,
   "nextCursor": "...",
   "scope": "recent",
-  "query": "جیرا",
+  "query": "jira",
   "expandableToOlder": true
 }
 ```
 
-- `expandableToOlder=true`: پایان صفحه‌بندی recent، دکمه «جلسات قدیمی‌تر» فعال است
+- `expandableToOlder=true`: End of recent pagination; the "Older meetings" button is enabled
 
-## موبایل
+## Mobile
 
-- مسیر: `/search`
-- دکمه ذره‌بین در `HomeHeader`
-- debounce 350ms
-- FlatList + دکمه «نمایش بیشتر»
+- Route: `/search`
+- Magnifying glass button in `HomeHeader`
+- Debounce 350ms
+- FlatList + "Show more" button
 
 ## Feature flag
 
 - `notes.search` (tier: free)
 
-## آینده
+## Future
 
-- PostgreSQL full-text search (`tsvector`) برای scale
-- هایلایت کلیدواژه در snippet
-- فیلتر پروژه / تاریخ
-- Redis cache برای queryهای پرتکرار
-- Rate limit per user (مثلاً ۳۰ req/min)
+- PostgreSQL full-text search (`tsvector`) for scale
+- Keyword highlight in snippets
+- Project / date filters
+- Redis cache for frequent queries
+- Rate limit per user (e.g. 30 req/min)
 
-## تست
+## Tests
 
 - `packages/shared/src/notes/search-utils.spec.ts`
 - `apps/api/src/notes/notes.service.spec.ts` (search)

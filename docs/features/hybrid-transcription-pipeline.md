@@ -1,64 +1,66 @@
-# معماری هیبریدی رونویسی جلسه
+# Hybrid meeting transcription architecture
 
-## فلسفه: سه لایه جدا
+## Philosophy: three separate layers
 
-| لایه | نقش | مدل |
-|------|-----|-----|
-| **WHO** | گوینده + زمان | `gpt-4o-transcribe-diarize` |
-| **WHAT** | متن دقیق (شنیدن دوباره audio) | `gpt-4o-transcribe` |
-| **SO WHAT** | تصمیم، اقدام، خلاصه (آینده) | Qwen + feature flag optimize |
+| Layer | Role | Model |
+|-------|------|-------|
+| **WHO** | Speaker + time | `gpt-4o-transcribe-diarize` |
+| **WHAT** | Accurate text (re-listening to audio) | `gpt-4o-transcribe` |
+| **SO WHAT** | Decisions, actions, summary (future) | Qwen + feature flag optimize |
 
 ```
-🎙️ Audio chunk
-       │
-       ▼
+Audio chunk
+       |
+       v
 gpt-4o-transcribe-diarize
-       │
+       |
  speaker + timestamps + draft text
-       │
- ┌─────┴─────┐
- │           │
- ▼           ▼
+       |
+ +-----+-----+
+ |           |
+ v           v
 segments   audio slices (ffmpeg)
- │           │
- └─────┬─────┘
-       ▼
+ |           |
+ +-----+-----+
+       v
  gpt-transcribe (per segment)
-       │
-       ▼
+       |
+       v
  Alignment / Merge
-       │
-       ▼
+       |
+       v
  Speaker-attributed final transcript
 ```
 
-## چرا re-transcribe روی audio segment؟
+## Why re-transcribe on audio segments?
 
-Diarization گاهی متن rough می‌دهد:
+Diarization sometimes produces rough text. Example (Persian speech):
 
-> «های عملکرد هوش مصنوعی در اتوم تبدیل صدا به متن نوافتاد»
+> "های عملکرد هوش مصنوعی در اتوم تبدیل صدا به متن نوافتاد"
 
-صدا واقعی:
+Actual speech:
 
-> «های، عملکرد هوش مصنوعی در اتوماسیون تبدیل صدا به متن نودافتاد...»
+> "های، عملکرد هوش مصنوعی در اتوماسیون تبدیل صدا به متن نودافتاد..."
 
-**اشتباه:** diarize → متن خراب → LLM حدس بزند  
-**درست:** diarize → speaker + timestamp → **همان بازه audio** → gpt-transcribe → متن واقعی
+(Gloss: diarized draft garbles "automation" and word boundaries; the refined pass restores the intended sentence.)
 
-## پیاده‌سازی فعلی (v1)
+**Wrong:** diarize → bad text → LLM guesses  
+**Right:** diarize → speaker + timestamp → **same audio window** → gpt-transcribe → real text
 
-### Live (هر ۳ ثانیه)
+## Current implementation (v1)
 
-1. Client: `MediaRecorder` segment کامل webm
+### Live (every 3 seconds)
+
+1. Client: full webm segment via `MediaRecorder`
 2. API: `HybridTranscriptionPipeline.processChunk()`
-3. Diarize کل chunk → segments
-4. برای هر segment:
-   - برش audio با ffmpeg (اگر چند گوینده)
-   - `gpt-4o-transcribe` روی همان slice
-5. Merge turns در `transcript_segments_json`
-6. UI: `[MM:SS] گوینده N: متن` با draft → refined
+3. Diarize entire chunk → segments
+4. For each segment:
+   - Trim audio with ffmpeg (if multiple speakers)
+   - `gpt-4o-transcribe` on that slice
+5. Merge turns in `transcript_segments_json`
+6. UI: `[MM:SS] Speaker N: text` with draft → refined
 
-### فایل‌های کلیدی
+### Key files
 
 ```
 apps/api/src/transcription/
@@ -85,40 +87,42 @@ AVALAI_HYBRID_PIPELINE=true
 
 ## Roadmap
 
-### v2: Batch alignment (کاهش API call)
+### v2: Batch alignment (fewer API calls)
 
 ```
-Diarization → 5–10 speaker segments
+Diarization → 5-10 speaker segments
        ↓
-یک audio chunk بزرگ‌تر
+One larger audio chunk
        ↓
-یک gpt-transcribe + word timestamps
+One gpt-transcribe + word timestamps
        ↓
-alignment با timestamp → speaker
+Alignment with timestamp → speaker
 ```
 
 ### v3: Live incremental refine
 
 ```
-[10:32:14] گوینده 2 · پیش‌نویس
+[10:32:14] Speaker 2 · draft
 به نظر من باید پروژه رو...
+(In English: "I think we should start the project...")
 
         ↓ (segment complete)
 
-[10:32:14] گوینده 2
+[10:32:14] Speaker 2
 به نظر من باید پروژه را از هفته آینده شروع کنیم.
+(In English: "I think we should start the project from next week.")
 ```
 
 ### v4: Speaker → Member mapping
 
-- Map `speaker_0` به `NoteMember.displayName`
-- UI: نام واقعی به‌جای «گوینده ۱»
+- Map `speaker_0` to `NoteMember.displayName`
+- UI: real name instead of "Speaker 1"
 
 ### v5: Optimize (Qwen)
 
 - Feature flag `meeting.transcript.optimize`
-- فقط روی متن نهایی، نه live
-- اصلاح املا + استخراج decision/action
+- Only on final text, not live
+- Spelling fixes + decision/action extraction
 
 ### v6: Benchmark pipeline
 
@@ -128,16 +132,16 @@ Same audio → Diarize | gpt-transcribe | Scribe | ...
                Evaluation → best pipeline
 ```
 
-## هزینه (تخمینی)
+## Cost (estimate)
 
-جلسه ۶۰ دقیقه:
+60-minute meeting:
 
-- Diarization: ~۶۰ min processing
-- Transcription: ~۶۰ min processing (یک بار per segment در v1، کمتر در v2)
+- Diarization: ~60 min processing
+- Transcription: ~60 min processing (once per segment in v1, less in v2)
 
-~$0.27/hour فقط transcribe (در $0.0045/min) اگر کیفیت بهتر شود، ارزش محصولی دارد.
+~$0.27/hour transcribe-only (at $0.0045/min); if quality improves, product value increases.
 
-## تست
+## Tests
 
 - `hybrid-transcription.pipeline.spec.ts`
 - `transcription.service.spec.ts`

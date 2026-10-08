@@ -1,25 +1,25 @@
-# تنظیمات
+# Settings
 
-## خلاصه
+## Summary
 
-صفحه تنظیمات برای مدیریت ظاهر اپ (محلی) و ترجیحات حریم خصوصی (همگام با سرور).
+The settings screen manages app appearance (local) and privacy preferences (synced with the server).
 
-## بخش‌ها
+## Sections
 
-### ظاهر (محلی)
+### Appearance (local)
 
-| تنظیم | گزینه‌ها | ذخیره‌سازی |
-|-------|---------|-----------|
-| تم | روشن / تیره | دستگاه (SecureStore / localStorage) |
-| سایز فونت | بزرگ / متوسط / کوچک | دستگاه |
+| Setting | Options | Storage |
+|---------|---------|---------|
+| Theme | Light / Dark | Device (SecureStore / localStorage) |
+| Font size | Large / Medium / Small | Device |
 
-کلید ذخیره: `jalase_app_preferences`
+Storage key: `jalase_app_preferences`
 
-### امنیت و حریم خصوصی (سرور)
+### Security and privacy (server)
 
-| تنظیم | پیش‌فرض | Endpoint |
-|-------|---------|----------|
-| رضایت اشتراک داده AI | `true` | `PATCH /api/v1/auth/settings` |
+| Setting | Default | Endpoint |
+|---------|---------|----------|
+| AI data sharing consent | `true` | `PATCH /api/v1/auth/settings` |
 
 ## Endpoint
 
@@ -31,19 +31,19 @@
 }
 ```
 
-فیلد `aiDataSharingConsent` در `GET /auth/me` هم برگردانده می‌شود.
+The `aiDataSharingConsent` field is also returned in `GET /api/v1/auth/me`.
 
 ## Feature flag
 
-`settings.manage` در `packages/shared`
+`settings.manage` in `packages/shared`
 
-## UI موبایل
+## Mobile UI
 
-- مسیر: `/settings`
-- از منوی پروفایل در داشبورد
-- کامپوننت: `apps/mobile/components/settings/SettingsScreen.tsx`
+- Route: `/settings`
+- From the profile menu on the dashboard
+- Component: `apps/mobile/components/settings/SettingsScreen.tsx`
 
-## تست‌ها
+## Tests
 
 - `apps/api/src/auth/auth.service.spec.ts`
 - `apps/mobile/lib/settings/settings-storage.spec.ts`

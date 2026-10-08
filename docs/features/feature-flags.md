@@ -1,68 +1,34 @@
-# Feature Flags
+# Feature flags
 
+## Summary
 
+Feature flag system for controlling feature access by tier (free / plus / pro / enterprise).
 
-## خلاصه
+## Endpoints
 
+- `GET /api/v1/feature-flags` - tier from env
+- `GET /api/v1/feature-flags/me` - tier from user subscription
 
-
-سیستم feature flag برای کنترل دسترسی ویژگی‌ها بر اساس tier (free / plus / pro / enterprise).
-
-
-
-## Endpoint
-
-
-
-- `GET /api/v1/feature-flags` - tier از env
-
-- `GET /api/v1/feature-flags/me` - tier از اشتراک کاربر
-
-
-
-## منبع حقیقت
-
-
+## Source of truth
 
 `packages/shared/src/feature-flags/flags.ts`
 
+## Tiers
 
-
-## Tierها
-
-
-
-| Tier | دسترسی |
-
+| Tier | Access |
 |------|--------|
+| **free** | Manual notes, search, settings |
+| **plus** | AI, Meet/Zoom connection, sharing, projects |
+| **pro** | All plus features + extended integrations (Skype, Jitsi, BBB) |
+| **enterprise** | SSO, on-prem deployment (future) |
 
-| **free** | یادداشت دستی، جستجو، تنظیمات |
-
-| **plus** | AI، اتصال Meet/Zoom، اشتراک‌گذاری، پروژه |
-
-| **pro** | همه plus + اتصالات extended (Skype, Jitsi, BBB) |
-
-| **enterprise** | SSO، استقرار لوکال (آینده) |
-
-
-
-## تست‌ها
-
-
+## Tests
 
 - `packages/shared/src/feature-flags/is-feature-enabled.spec.ts` (unit)
-
 - `apps/api/test/app.e2e-spec.ts` (e2e)
 
+## Adding a new feature
 
-
-## افزودن فیچر جدید
-
-
-
-1. flag را در `packages/shared` ثبت کن
-
-2. در API/کلاینت با `isFeatureEnabled` بررسی کن
-
-3. داک و تست بنویس
-
+1. Register the flag in `packages/shared`
+2. Check with `isFeatureEnabled` in API/client
+3. Write documentation and tests

@@ -1,15 +1,15 @@
-# تب‌های زمانی جلسات (Meeting Tabs)
+# Meeting Tabs
 
-## خلاصه
+## Summary
 
-صفحه خانه به‌جای دو سکشن «آینده / اخیر»، **۴ تب** شبیه تلگرام دارد:
+The home screen uses **4 tabs** (Telegram-style) instead of two sections for "Upcoming / Recent":
 
-| تب | بازه `meeting_date` (محلی کاربر) |
-|----|----------------------------------|
-| امروز | `[الان, شروع فردا)` — فقط جلسات باقی‌مانده امروز |
-| فردا | `[شروع فردا, پس‌فردا)` |
-| هفته آینده | `[پس‌فردا, +۷ روز)` |
-| گذشته | `< الان` — شامل جلسات امروز که ساعتشان گذشته + صفحه‌بندی |
+| Tab | `meeting_date` range (user local time) |
+|-----|----------------------------------------|
+| Today | `[now, start of tomorrow)` - only meetings still remaining today |
+| Tomorrow | `[start of tomorrow, day after tomorrow)` |
+| Next week | `[day after tomorrow, +7 days)` |
+| Past | `< now` - includes today's meetings whose time has passed, plus pagination |
 
 ## API
 
@@ -18,28 +18,28 @@
 Query:
 
 - `bucket`: `today` | `tomorrow` | `next_week` | `past`
-- `tzOffsetMinutes`: آفست محلی (پیش‌فرض ۲۱۰ = ایران)
-- `cursor`, `limit`: فقط برای `past`
+- `tzOffsetMinutes`: local offset (default 210 = Iran)
+- `cursor`, `limit`: only for `past`
 
 Response: `{ items, nextCursor, hasMore, bucket }`
 
-## کش کلاینت
+## Client cache
 
-- **وب:** IndexedDB (`jalase-meetings-v1`)، stale-while-revalidate
-- **native:** حافظه in-process (fallback)
-- تب **گذشته:** صفحات بعدی در IDB append می‌شوند
+- **Web:** IndexedDB (`jalase-meetings-v1`), stale-while-revalidate
+- **Native:** in-process memory (fallback)
+- **Past tab:** subsequent pages are appended in IDB
 
 ## UI
 
-- `MeetingTabs`: underline متحرک، badge تعداد
+- `MeetingTabs`: animated underline, count badge
 - `useMeetingBucket`: fetch + cache + pull-to-refresh
-- empty state مخصوص هر تب
+- Empty state per tab
 
 ## Feature flag
 
-`notes.meetingTabs` در `packages/shared`
+`notes.meetingTabs` in `packages/shared`
 
-## تست
+## Tests
 
 - `meeting-buckets.spec.ts` (shared)
 - `notes.service` listMeetings (API)

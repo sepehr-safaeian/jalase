@@ -2,7 +2,7 @@
 
 Feature-level notes live in [`features/`](./features/).
 
-Most historical feature docs are written in Persian. New docs should prefer English so open-source contributors can follow them easily.
+All feature docs are in English.
 
 ## Suggested reading order
 

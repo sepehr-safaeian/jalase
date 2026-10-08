@@ -1,42 +1,42 @@
-# ضبط گوشا (Meeting Recorder)
+# Jalase meeting recorder
 
-صفحه تمام‌صفحه ضبط جلسه با visualizer فرکانس واقعی و برند «گوشا».
+Full-screen meeting recording page with a real frequency visualizer and Jalase branding.
 
-## جریان کاربر
+## User flow
 
-1. «جلسه جدید» → «همین الان» → **یادداشت** باز می‌شود (ادیتور).
-2. کاربر «ضبط جلسه» را می‌زند → `/notes/:id/record` (گوشا).
-3. ضبط خودکار شروع می‌شود؛ **مکث** وسط جلسه بدون قطع session (MediaRecorder.pause).
-4. «پایان ضبط» → finalize → بازگشت به یادداشت با رونوشت.
-5. دکمه «ضبط جلسه» دیگر نمایش داده نمی‌شود (یک بار ضبط).
-6. **صدای جلسه** در انتهای یادداشت با `<audio controls>` (وب) قابل پخش است.
+1. "New meeting" → "Right now" → **note** opens (editor).
+2. User taps "Record meeting" → `/notes/:id/record` (recorder).
+3. Recording starts automatically; **pause** mid-meeting without ending the session (`MediaRecorder.pause`).
+4. "Stop recording" → finalize → return to note with transcript.
+5. "Record meeting" button is hidden afterward (single recording).
+6. **Meeting audio** at the end of the note is playable via `<audio controls>` (web).
 
-جلسات زمان‌بندی‌شده مستقیم به ادیتور می‌روند.
+Scheduled meetings go straight to the editor.
 
 ## API
 
-- `POST .../recording/start`: اگر قبلاً ضبط شده → 400
-- `POST .../recording/finalize`: فایل در `uploads/recordings/{noteId}.webm` + `recording_audio_url`
+- `POST .../recording/start`: if already recorded → 400
+- `POST .../recording/finalize`: file at `uploads/recordings/{noteId}.webm` + `recording_audio_url`
 
-## کامپوننت‌ها
+## Components
 
-| مسیر | نقش |
-|------|-----|
-| `components/recorder/MeetingRecorderScreen.web.tsx` | گوشا + مکث/پایان |
+| Path | Role |
+|------|------|
+| `components/recorder/MeetingRecorderScreen.web.tsx` | Recorder + pause/stop |
 | `components/recorder/AudioFrequencyVisualizer.web.tsx` | Canvas + Web Audio |
-| `components/notes/NoteRecordingPlayer.web.tsx` | پخش صدای ضبط‌شده |
+| `components/notes/NoteRecordingPlayer.web.tsx` | Play recorded audio |
 | `packages/shared/.../recording-utils.ts` | `noteHasCompletedRecording` |
 
-## motion
+## Motion
 
-- visualizer: rAF روی canvas
-- دکمه‌ها: `scale(0.97)` روی فشار
-- `prefers-reduced-motion`: smoothing کمتر
+- Visualizer: rAF on canvas
+- Buttons: `scale(0.97)` on press
+- `prefers-reduced-motion`: reduced smoothing
 
-## افزونه مرورگر
+## Browser extension
 
-برای جلسات آنلاین (Google Meet و ...): [goosha-extension.md](./goosha-extension.md)
+For online meetings (Google Meet, etc.): [goosha-extension.md](./goosha-extension.md)
 
-## تست
+## Tests
 
-- یادداشت جدید → ادیتور → ضبط → مکث → ادامه → پایان → دکمه ضبط حذف + پلیر صدا
+- New note → editor → record → pause → resume → stop → record button removed + audio player

@@ -1,10 +1,10 @@
-# رونویسی زنده جلسه (Meeting Transcription)
+# Live Meeting Transcription
 
-> **معماری فعلی:** [hybrid-transcription-pipeline.md](./hybrid-transcription-pipeline.md)
+> **Current architecture:** [hybrid-transcription-pipeline.md](./hybrid-transcription-pipeline.md)
 
-## خلاصه
+## Summary
 
-ضبط صدای زنده از مرورگر، pipeline هیبریدی diarize + transcribe، رونویسی speaker-attributed با timestamp.
+Live audio capture from the browser, hybrid diarize + transcribe pipeline, speaker-attributed transcription with timestamps.
 
 ## Env
 
@@ -12,7 +12,7 @@
 AVALAI_DIARIZE_MODEL=gpt-4o-transcribe-diarize
 AVALAI_TRANSCRIBE_MODEL=gpt-4o-transcribe
 AVALAI_HYBRID_PIPELINE=true
-FFMPEG_PATH=   # اختیاری، برای برش segment چند گوینده
+FFMPEG_PATH=   # optional, for splitting multi-speaker segments
 ```
 
 ## Feature flags
@@ -20,4 +20,4 @@ FFMPEG_PATH=   # اختیاری، برای برش segment چند گوینده
 - `meeting.record`
 - `meeting.transcribe`
 - `meeting.transcript.hybrid`
-- `meeting.transcript.optimize` (Qwen، آینده)
+- `meeting.transcript.optimize` (Qwen, future)

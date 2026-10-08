@@ -1,63 +1,65 @@
-# درگاه پرداخت زیبال
+# Zibal Payment Gateway
 
-## خلاصه
+> **Open-source build:** Zibal IPG checkout and subscription payment activation are **disabled** in the OSS build. This document describes the production integration for reference.
 
-پرداخت اشتراک و توربو از طریق **درگاه IPG زیبال** انجام می‌شود. فعلاً مرچنت تست `zibal` فعال است.
+## Summary
 
-## جریان پرداخت
+Subscription and Turbo payments run through the **Zibal IPG gateway**. In development, the test merchant `zibal` is typically used.
+
+## Payment flow
 
 ```
-۱. POST /subscriptions/orders (یا addon-orders) → pending_payment
-۲. POST /subscriptions/orders/:id/pay/init → paymentUrl + trackId
-۳. کاربر به paymentUrl می‌رود (HTTP 302 مستقیم API → زیبال، بدون inline script)
-۴. پرداخت در زیبال
-۵. GET /payments/zibal/callback?trackId=...&success=... → verify + فعال‌سازی
-۶. Redirect به returnUrl (مثلا /subscription/result?status=success)
+1. POST /api/v1/subscriptions/orders (or addon-orders) → pending_payment
+2. POST /api/v1/subscriptions/orders/:id/pay/init → paymentUrl + trackId
+3. User opens paymentUrl (HTTP 302 direct from API → Zibal, no inline script)
+4. Payment on Zibal
+5. GET /api/v1/payments/zibal/callback?trackId=...&success=... → verify + activation
+6. Redirect to returnUrl (e.g. /subscription/result?status=success)
 ```
 
-## Endpointها
+## Endpoints
 
-| Method | Path | Auth | توضیح |
-|--------|------|------|-------|
-| POST | `/subscriptions/orders/:id/pay/init` | Bearer | شروع پرداخت زیبال |
-| GET | `/payments/zibal/callback` | خیر | Callback زیبال |
-| GET | `/payments/zibal/start/:trackId` | خیر | Redirect میانی با Referer |
-| POST | `/subscriptions/orders/:id/pay` | Bearer | فقط dev + `ZIBAL_ALLOW_DEV_SIMULATE=true` |
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/subscriptions/orders/:id/pay/init` | Bearer | Start Zibal payment |
+| GET | `/api/v1/payments/zibal/callback` | No | Zibal callback |
+| GET | `/api/v1/payments/zibal/start/:trackId` | No | Intermediate redirect with Referer |
+| POST | `/api/v1/subscriptions/orders/:id/pay` | Bearer | Dev only + `ZIBAL_ALLOW_DEV_SIMULATE=true` |
 
-## متغیرهای محیطی
+## Environment variables
 
-| Variable | پیش‌فرض | توضیح |
-|----------|---------|-------|
-| `ZIBAL_MERCHANT` | `zibal` | مرچنت زیبال |
-| `API_PUBLIC_URL` | `http://localhost:3000` | آدرس عمومی API برای callback |
-| `PAYMENT_RETURN_URL` | `http://localhost:8081/subscription/result` | بازگشت پیش‌فرض |
-| `PAYMENT_RETURN_ALLOWED_HOSTS` | `localhost,127.0.0.1,...` | دامنه‌های مجاز returnUrl |
-| `ZIBAL_ALLOW_DEV_SIMULATE` | `false` | شبیه‌سازی پرداخت در dev |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ZIBAL_MERCHANT` | `zibal` | Zibal merchant ID |
+| `API_PUBLIC_URL` | `http://localhost:3000` | Public API URL for callback |
+| `PAYMENT_RETURN_URL` | `http://localhost:8081/subscription/result` | Default return URL |
+| `PAYMENT_RETURN_ALLOWED_HOSTS` | `localhost,127.0.0.1,...` | Allowed returnUrl hosts |
+| `ZIBAL_ALLOW_DEV_SIMULATE` | `false` | Simulate payment in dev |
 
-## امنیت
+## Security
 
-- Verify سمت سرور پس از callback (الزام زیبال)
-- تطبیق `amount` (ریال) و `orderId` با سفارش
-- `returnUrl` فقط از دامنه‌های مجاز یا `jalase://`
-- پرداخت مستقیم بدون درگاه در production غیرفعال
-- `trackId` در start redirect فقط برای سفارش `pending_payment` معتبر است
+- Server-side verify after callback (Zibal requirement)
+- Match `amount` (Rial) and `orderId` to the order
+- `returnUrl` only from allowed hosts or `jalase://`
+- Direct payment without gateway disabled in production
+- `trackId` in start redirect valid only for `pending_payment` orders
 
-## مبلغ
+## Amount
 
-سفارش‌ها به **تومان** ذخیره می‌شوند. زیبال **ریال** می‌خواهد: `amountRial = amountToman × 10`.
+Orders are stored in **Toman**. Zibal expects **Rial**: `amountRial = amountToman × 10`.
 
-## موبایل
+## Mobile
 
-- بازگشت: deep link `jalase://subscription/result`
-- صفحه میانی API برای ارسال Referer (الزام زیبال در اپ)
+- Return: deep link `jalase://subscription/result`
+- Intermediate API page to send Referer (Zibal requirement in the app)
 
-## تست
+## Testing
 
-1. `ZIBAL_MERCHANT=zibal` در `.env`
-2. `API_PUBLIC_URL` باید از بیرون قابل دسترسی باشد (برای callback واقعی از ngrok استفاده کنید)
-3. در محیط local، callback زیبال ممکن است به localhost redirect کند اگر `API_PUBLIC_URL` لوکال باشد
+1. Set `ZIBAL_MERCHANT=zibal` in `.env`
+2. `API_PUBLIC_URL` must be reachable from the internet (use ngrok for a real callback)
+3. Locally, Zibal callback may redirect to localhost if `API_PUBLIC_URL` is local
 
 ## UI
 
-- مودال تأیید قبل از انتقال به درگاه
-- صفحه `/subscription/result` برای موفق / ناموفق / لغو
+- Confirmation modal before redirect to the gateway
+- Page `/subscription/result` for success / failure / cancel

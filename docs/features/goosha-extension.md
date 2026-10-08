@@ -1,25 +1,25 @@
-# افزونه Goosha (گوشا)
+# Jalase browser extension
 
-افزونه مرورگر Chrome/Firefox برای ضبط صدای جلسات آنلاین و رونویسی با API جلسه.
+Chrome/Firefox browser extension for recording online meeting audio and transcribing via the Jalase API.
 
-## فاز ۱: Google Meet
+## Phase 1: Google Meet
 
-| مورد | مقدار |
+| Item | Value |
 |------|-------|
 | Workspace | `apps/extension` |
 | Package | `@jalase/extension` |
 | Host | `https://meet.google.com/*` |
 | Feature flags | `meeting.connect`, `meeting.record` |
 
-## جریان کاربر
+## User flow
 
-1. کاربر وارد Google Meet می‌شود.
-2. افزونه **ConsentModal** نشان می‌دهد: «این جلسه ضبط شود؟»
-3. با «بله»: بررسی auth + tier → ایجاد یادداشت → tab capture → **RecorderOverlay**
-4. «پایان ضبط» → آپلود → رونویسی سرور → notification + toast
-5. «مشاهده در اپ Goosha» → `https://goosha.app/notes/:id`
+1. User joins Google Meet.
+2. Extension shows **ConsentModal**: "Record this meeting?"
+3. On "Yes": auth + tier check → create note → tab capture → **RecorderOverlay**
+4. "Stop recording" → upload → server transcription → notification + toast
+5. "View in Jalase app" → `https://goosha.app/notes/:id`
 
-## معماری
+## Architecture
 
 ```
 Content Script (Meet) → Service Worker → Offscreen (MediaRecorder)
@@ -27,39 +27,39 @@ Content Script (Meet) → Service Worker → Offscreen (MediaRecorder)
                          API /api/v1
 ```
 
-- تمام fetchها از Service Worker (بدون CORS)
-- JWT در `chrome.storage.local` با کلید `jalase_access_token`
-- صدا: `chrome.tabCapture.getMediaStreamId` + Offscreen `getUserMedia`
+- All fetches from the Service Worker (no CORS)
+- JWT in `chrome.storage.local` under key `jalase_access_token`
+- Audio: `chrome.tabCapture.getMediaStreamId` + Offscreen `getUserMedia`
 
 ## API (reuse)
 
-| Endpoint | کاربرد |
-|----------|--------|
+| Endpoint | Purpose |
+|----------|---------|
 | `POST /auth/otp/send` | OTP |
-| `POST /auth/otp/verify` | ورود |
+| `POST /auth/otp/verify` | Sign in |
 | `GET /auth/me` | session |
 | `GET /feature-flags/me` | tier gating |
-| `POST /notes` | ایجاد یادداشت |
-| `POST /notes/:id/recording/start` | شروع session |
-| `POST /notes/:id/recording/finalize` | آپلود + رونویسی |
-| `POST /notes/:id/recording/stop` | لغو |
+| `POST /notes` | Create note |
+| `POST /notes/:id/recording/start` | Start session |
+| `POST /notes/:id/recording/finalize` | Upload + transcribe |
+| `POST /notes/:id/recording/stop` | Cancel |
 
 ## Platform adapters
 
-| Platform | Adapter | فاز |
-|----------|---------|-----|
-| Google Meet | `platforms/google-meet.ts` | ۱ |
-| MS Teams | `platforms/stubs.ts` | ۲ |
-| Skype | `platforms/stubs.ts` | ۳ |
-| Jitsi | `platforms/stubs.ts` | ۳ |
-| BigBlueButton | `platforms/stubs.ts` | ۳ |
+| Platform | Adapter | Phase |
+|----------|---------|-------|
+| Google Meet | `platforms/google-meet.ts` | 1 |
+| MS Teams | `platforms/stubs.ts` | 2 |
+| Skype | `platforms/stubs.ts` | 3 |
+| Jitsi | `platforms/stubs.ts` | 3 |
+| BigBlueButton | `platforms/stubs.ts` | 3 |
 
 ## Permissions
 
 - `storage`, `activeTab`, `tabCapture`, `offscreen`, `notifications`
-- `host_permissions`: `meet.google.com` (فاز ۱)
+- `host_permissions`: `meet.google.com` (phase 1)
 
-## توسعه
+## Development
 
 ```bash
 npm run dev:extension
@@ -71,27 +71,27 @@ Env: `WXT_API_URL`, `WXT_GOOSHA_APP_URL`
 
 ## Manual QA (Google Meet)
 
-- [ ] نصب unpacked extension
-- [ ] ورود OTP از popup
-- [ ] join Meet → Consent → Recorder
-- [ ] مکث / ادامه / پایان
-- [ ] رونوشت در اپ Goosha
-- [ ] tier بدون `meeting.record` → پیام upgrade
-- [ ] لغو ضبط
-- [ ] «نه، ممنون» → عدم نمایش مجدد در همان session
+- [ ] Install unpacked extension
+- [ ] OTP sign-in from popup
+- [ ] Join Meet → Consent → Recorder
+- [ ] Pause / resume / stop
+- [ ] Transcript in Jalase app
+- [ ] Tier without `meeting.record` → upgrade message
+- [ ] Cancel recording
+- [ ] "No, thanks" → do not show again in same session
 
 ## Store
 
-راهنمای انتشار: `apps/extension/store/README.md`
+Publishing guide: `apps/extension/store/README.md`
 
 ## UI
 
 - Design tokens: `src/styles/tokens.css`
-- مرجع بصری: `MeetingRecorderScreen.web.tsx` (موبایل/PWA)
-- فونت: Vazirmatn لوکال در `public/fonts/`
+- Visual reference: `MeetingRecorderScreen.web.tsx` (mobile/PWA)
+- Font: local Vazirmatn in `public/fonts/`
 
-## لینک‌ها
+## Links
 
-- [ضبط گوشا (PWA)](./goosha-recorder.md)
-- [احراز هویت OTP](./auth-phone-otp.md)
-- [رونویسی جلسه](./meeting-transcription.md)
+- [Meeting recorder (PWA)](./goosha-recorder.md)
+- [OTP authentication](./auth-phone-otp.md)
+- [Meeting transcription](./meeting-transcription.md)

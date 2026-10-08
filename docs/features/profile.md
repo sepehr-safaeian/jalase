@@ -1,46 +1,46 @@
-# پروفایل کاربر
+# User Profile
 
-## خلاصه
+## Summary
 
-صفحه پروفایل برای مشاهده و ویرایش اطلاعات شخصی کاربر. شامل تصویر پروفایل، نام، ایمیل و حذف نرم حساب.
+The profile screen lets users view and edit personal information. It includes profile photo, name, email, and soft account deletion.
 
-## Endpointها
+## Endpoints
 
-| Method | Path | Auth | توضیح |
-|--------|------|------|-------|
-| GET | `/api/v1/auth/me` | Bearer | دریافت پروفایل |
-| PATCH | `/api/v1/auth/profile` | Bearer | ویرایش نام و ایمیل |
-| POST | `/api/v1/auth/profile/avatar` | Bearer | آپلود تصویر (multipart) |
-| DELETE | `/api/v1/auth/account` | Bearer | حذف نرم حساب |
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/auth/me` | Bearer | Get profile |
+| PATCH | `/api/v1/auth/profile` | Bearer | Update name and email |
+| POST | `/api/v1/auth/profile/avatar` | Bearer | Upload image (multipart) |
+| DELETE | `/api/v1/auth/account` | Bearer | Soft-delete account |
 
-## فیلدها
+## Fields
 
-| فیلد | قابل ویرایش | توضیح |
-|------|-------------|-------|
-| `firstName` | بله | نام |
-| `lastName` | بله | نام خانوادگی |
-| `phone` | خیر | فقط نمایش |
-| `email` | بله | اختیاری |
-| `avatarUrl` | بله (آپلود) | مسیر فایل ذخیره‌شده |
+| Field | Editable | Description |
+|-------|----------|-------------|
+| `firstName` | Yes | First name |
+| `lastName` | Yes | Last name |
+| `phone` | No | Display only |
+| `email` | Yes | Optional |
+| `avatarUrl` | Yes (upload) | Stored file path |
 
-## حذف حساب
+## Account deletion
 
-- با `DELETE /auth/account` انجام می‌شود
-- در دیتابیس `deleted_at` ست می‌شود (soft delete)
-- کاربر حذف‌شده نمی‌تواند دوباره وارد شود
-- تصویر پروفایل از دیسک حذف می‌شود
+- Performed via `DELETE /auth/account`
+- Sets `deleted_at` in the database (soft delete)
+- Deleted users cannot sign in again
+- Profile image is removed from disk
 
 ## Feature flag
 
-`profile.manage` در `packages/shared`، tier: personal
+`profile.manage` in `packages/shared`, tier: personal
 
-## UI موبایل
+## Mobile UI
 
-- مسیر: `/profile`
-- از منوی پروفایل در داشبورد قابل دسترسی است
-- کامپوننت: `apps/mobile/components/profile/ProfileScreen.tsx`
+- Route: `/profile`
+- Accessible from the profile menu on the dashboard
+- Component: `apps/mobile/components/profile/ProfileScreen.tsx`
 
-## تست‌ها
+## Tests
 
 - `packages/shared/src/auth/is-profile-complete.spec.ts`
 - `apps/api/src/auth/auth.service.spec.ts`

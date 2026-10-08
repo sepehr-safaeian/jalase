@@ -1,14 +1,14 @@
-# Health Check
+# Health check
 
-## خلاصه
+## Summary
 
-endpoint سلامت سرویس برای monitoring و readiness probe.
+Service health endpoint for monitoring and readiness probes.
 
 ## Endpoint
 
 `GET /api/v1/health`
 
-## پاسخ
+## Response
 
 ```json
 {
@@ -21,9 +21,9 @@ endpoint سلامت سرویس برای monitoring و readiness probe.
 
 ## Tier
 
-همه tierها، بدون احراز هویت
+All tiers, no authentication required
 
-## تست‌ها
+## Tests
 
 - `apps/api/src/health/health.service.spec.ts` (unit)
 - `apps/api/test/app.e2e-spec.ts` (e2e)

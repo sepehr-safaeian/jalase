@@ -1,62 +1,66 @@
-# اشتراک و پلن‌ها
+# Subscriptions and Plans
 
-## پلن‌ها
+> **Open-source build:** Billing, Zibal checkout, and paid subscription activation are **disabled** in the OSS build. The plans, endpoints, and database schema below remain accurate for a full production deployment.
 
-| پلن | قیمت ماهانه | خلاصه |
-|-----|-------------|-------|
-| **رایگان** | ۰ | یادداشت دستی، جلسات حضوری، بدون AI |
-| **پلاس** | ۱۴۹٬۰۰۰ تومان | AI تا ۱۰ بار/ماه، Meet و Zoom، اشتراک‌گذاری |
-| **پرو** | ۴۹۹٬۰۰۰ تومان | AI تا ۳۰ بار/ماه، همه اتصالات جلسه، اشتراک‌گذاری |
+## Plans
 
-## پکیج توربو
+| Plan | Monthly price | Summary |
+|------|---------------|---------|
+| **Free** | 0 | Manual notes, in-person meetings, no AI |
+| **Plus** | 149,000 Toman | AI up to 10 uses/month, Meet and Zoom, sharing |
+| **Pro** | 499,000 Toman | AI up to 30 uses/month, all meeting connections, sharing |
 
-| افزونه | قیمت ماهانه | شرط |
-|--------|-------------|-----|
-| **توربو** | ۲۹۹٬۰۰۰ تومان | اشتراک فعال پلاس یا پرو + AI نامحدود |
+## Turbo add-on
 
-نسخه **سازمانی (enterprise)** پس از MVP در نظر گرفته شده است.
+| Add-on | Monthly price | Requirement |
+|--------|---------------|-------------|
+| **Turbo** | 299,000 Toman | Active Plus or Pro subscription + unlimited AI |
 
-## دوره‌های پرداخت
+The **enterprise** tier is planned after MVP.
 
-اشتراک ماهانه است، اما پرداخت به‌صورت دوره‌ای:
+## Billing periods
 
-| دوره | پرداخت | اعتبار |
-|------|--------|--------|
-| ۳ ماهه | ۳ ماه | ۳ ماه |
-| ۶ ماهه | ۶ ماه | ۶ ماه |
-| یک‌ساله | ۱۲ ماه | ۱۴ ماه (+۲ ماه هدیه) |
+Subscriptions are billed monthly, but payment is collected per period:
 
-## جریان سفارش
+| Period | Payment | Credit |
+|--------|---------|--------|
+| 3 months | 3 months | 3 months |
+| 6 months | 6 months | 6 months |
+| 1 year | 12 months | 14 months (+2 bonus months) |
 
-1. `POST /subscriptions/orders` - ایجاد سفارش پلن با وضعیت `pending_payment`
-2. `POST /subscriptions/addon-orders` - ایجاد سفارش توربو (نیاز به پلاس/پرو فعال)
-3. `POST /subscriptions/orders/:id/pay/init` - شروع پرداخت زیبال
-4. Callback و verify در `GET /payments/zibal/callback`
-5. اشتراک فعال می‌شود و `expires_at` ست می‌شود
+## Order flow
 
-جزئیات درگاه: `docs/features/zibal-payment.md`
+1. `POST /api/v1/subscriptions/orders` - Create plan order with status `pending_payment`
+2. `POST /api/v1/subscriptions/addon-orders` - Create Turbo order (requires active Plus/Pro)
+3. `POST /api/v1/subscriptions/orders/:id/pay/init` - Start Zibal payment
+4. Callback and verify at `GET /api/v1/payments/zibal/callback`
+5. Subscription activates and `expires_at` is set
 
-## Endpointها
+Gateway details: `docs/features/zibal-payment.md`
+
+In the OSS build, steps 3-5 and paid activation do not run; use free-tier behavior only.
+
+## Endpoints
 
 | Method | Path | Auth |
 |--------|------|------|
-| GET | `/subscriptions/plans` | خیر |
-| GET | `/subscriptions/me` | Bearer |
-| POST | `/subscriptions/orders` | Bearer |
-| POST | `/subscriptions/addon-orders` | Bearer |
-| POST | `/subscriptions/orders/:id/pay/init` | Bearer |
-| GET | `/payments/zibal/callback` | خیر |
-| POST | `/subscriptions/orders/:id/pay` | Bearer (فقط dev) |
-| POST | `/subscriptions/free` | Bearer |
-| POST | `/workspaces` | Bearer (پلن پرو) |
-| GET | `/workspaces/me` | Bearer |
+| GET | `/api/v1/subscriptions/plans` | No |
+| GET | `/api/v1/subscriptions/me` | Bearer |
+| POST | `/api/v1/subscriptions/orders` | Bearer |
+| POST | `/api/v1/subscriptions/addon-orders` | Bearer |
+| POST | `/api/v1/subscriptions/orders/:id/pay/init` | Bearer |
+| GET | `/api/v1/payments/zibal/callback` | No |
+| POST | `/api/v1/subscriptions/orders/:id/pay` | Bearer (dev only) |
+| POST | `/api/v1/subscriptions/free` | Bearer |
+| POST | `/api/v1/workspaces` | Bearer (Pro plan) |
+| GET | `/api/v1/workspaces/me` | Bearer |
 
-## دیتابیس
+## Database
 
-- `subscriptions` - اشتراک فعال کاربر (`has_turbo`, `turbo_expires_at`)
-- `subscription_orders` - سفارش‌ها (`order_type`: plan | addon)
-- `workspaces` - ورک‌اسپیس (پلن پرو)
-- `workspace_members` - اعضا و نقش
+- `subscriptions` - User's active subscription (`has_turbo`, `turbo_expires_at`)
+- `subscription_orders` - Orders (`order_type`: plan | addon)
+- `workspaces` - Workspace (Pro plan)
+- `workspace_members` - Members and roles
 
 ## Feature flag
 
@@ -67,6 +71,6 @@
 | `meeting.connect.extended` | pro |
 | `enterprise.*` | enterprise |
 
-## UI موبایل
+## Mobile UI
 
-مسیر: `/subscription`
+Route: `/subscription`

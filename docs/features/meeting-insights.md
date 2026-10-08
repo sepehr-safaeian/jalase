@@ -1,44 +1,44 @@
-# استخراج هوشمند جلسه
+# Smart meeting extraction
 
-## خلاصه
+## Summary
 
-برای جلسات **ضبط‌شده** (بدون ضبط مجدد)، FAB آیکونی ⚡ باز می‌کند sheet با ۴ گزینه:
+For **recorded** meetings (no re-recording), a zap icon FAB opens a sheet with 4 options:
 
-| kind | UI | بخش یادداشت |
-|------|-----|-------------|
-| `summary` | خلاصه جلسه | ## خلاصه |
-| `decisions` | تصمیم‌ها | ## تصمیم‌ها |
-| `next_actions` | کارهای بعدی | ## کارهای بعدی (task list) |
-| `highlights` | نکات مهم | ## نکات مهم |
+| kind | UI | Note section |
+|------|-----|--------------|
+| `summary` | Meeting summary | ## Summary |
+| `decisions` | Decisions | ## Decisions |
+| `next_actions` | Next steps | ## Next steps (task list) |
+| `highlights` | Key points | ## Key points |
 
-**هر kind فقط یک‌بار** per note (`ai_extractions_json`).
+**Each kind runs only once** per note (`ai_extractions_json`).
 
-## فلسفه: محافظه‌کارانه، نه پرکردن لیست
+## Philosophy: conservative, not list padding
 
-استخراج هوشمند عمداً **محتاط** است:
+Smart extraction is intentionally **cautious**:
 
-- اگر رونوشت کوتاه یا بی‌محتواست، LLM صدا زده نمی‌شود
-- اگر تصمیم/اقدام/نکته قطعی نیست، بخش با پیام صادقانه پر می‌شود (نه bullet خالی)
-- هر آیتم باید `evidence` از رونوشت + `confidence >= 0.75` داشته باشد
-- عبارات کلی و filler رد می‌شوند
+- If the transcript is short or empty, the LLM is not called
+- If decisions/actions/highlights are not clear, the section is filled with an honest message (not empty bullets)
+- Each item must have `evidence` from the transcript + `confidence >= 0.75`
+- Generic phrases and filler are rejected
 
-### پیام‌های حالت خالی
+### Empty-state messages
 
-| kind | پیام پیش‌فرض |
-|------|-------------|
-| `summary` | محتوای کافی برای خلاصه‌سازی وجود ندارد. |
-| `decisions` | در این جلسه تصمیم قطعی ثبت نشده است. |
-| `next_actions` | اقدام مشخصی از این جلسه استخراج نشد. |
-| `highlights` | نکته مهمی برای ثبت پیدا نشد. |
+| kind | Default message |
+|------|-----------------|
+| `summary` | Not enough content to summarize. |
+| `decisions` | No clear decisions were recorded in this meeting. |
+| `next_actions` | No specific actions were extracted from this meeting. |
+| `highlights` | No important points were found to record. |
 
 ## Pipeline
 
 ```
-رونوشت + kind
-  → assessTranscriptSufficiency (fast-path برای رونوشت خیلی کوتاه)
+Transcript + kind
+  → assessTranscriptSufficiency (fast-path for very short transcripts)
   → LLM JSON: { has_items, empty_reason, items[{text, evidence, confidence}] }
   → validateExtractionCandidates (evidence + confidence + anti-filler)
-  → syncNoteSection (لیست یا پاراگراف حالت خالی)
+  → syncNoteSection (list or empty-state paragraph)
   → mark extraction used
 ```
 
@@ -46,12 +46,12 @@
 
 `POST /api/v1/notes/:id/extractions/:kind`
 
-- نیاز به رونوشت
-- LLM: AvalAI (`AVALAI_EXTRACT_MODEL`, پیش‌فرض `qwen3.5-flash`)
+- Requires transcript
+- LLM: AvalAI (`AVALAI_EXTRACT_MODEL`, default `qwen3.5-flash`)
 - temperature: `0.05`
-- timeout تطبیقی: ۳۰s / ۶۰s / ۹۰s بر اساس طول رونوشت
-- خروجی در `contentJson` با `syncNoteSection`
-- **حالت خالی خطا نیست**؛ extraction همچنان used می‌شود
+- Adaptive timeout: 30s / 60s / 90s based on transcript length
+- Output in `contentJson` via `syncNoteSection`
+- **Empty state is not an error**; extraction is still marked used
 
 ## DB
 
@@ -63,11 +63,11 @@
 
 ## UI
 
-- `MeetingInsightFab`: دایره لوکس، آیکون zap، halo زرد subtle
-- `MeetingInsightSheet`: کارت‌های formal با badge «انجام شد»
-- کلاینت: timeout ۱۲۰s برای درخواست استخراج
+- `MeetingInsightFab`: circular FAB, zap icon, subtle yellow halo
+- `MeetingInsightSheet`: formal cards with "Done" badge
+- Client: 120s timeout for extraction requests
 
-## تست
+## Tests
 
 - `packages/shared/src/notes/meeting-extractions.spec.ts`
 - `apps/api/src/notes/meeting-extraction.service.spec.ts`

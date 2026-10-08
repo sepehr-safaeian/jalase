@@ -1,32 +1,32 @@
-# یادداشت‌ها (Notes)
+# Notes
 
-## خلاصه محصول
+## Product summary
 
-یادداشت = جلسه. هر یادداشت یک فضای Tiptap (Notion-like) دارد با متادیتای قابل لمس:
+Note = meeting. Each note is a Tiptap space (Notion-like) with editable metadata:
 
-| متادیتا | رفتار |
-|---------|--------|
-| **تاریخ** | نمایش تاریخ ایجاد، آخرین ویرایش، تاریخ جلسه |
-| **اعضا** | لیست + افزودن سریع (نام + ایمیل) |
-| **پروژه** | انتخاب از پروژه‌های کاربر یا ایجاد پروژه جدید |
+| Metadata | Behavior |
+|----------|----------|
+| **Date** | Shows created date, last edited, meeting date |
+| **Members** | List + quick add (name + email) |
+| **Project** | Pick from the user's projects or create a new project |
 
-## مدل داده
+## Data model
 
-- **Project**: نام، رنگ، آرشیو، مالک
-- **Note**: عنوان، `contentJson` (Tiptap document)، پروژه، تاریخ جلسه، اعضا، `archivedAt`، `deletedAt`
-- **NoteMember**: نام، ایمیل (unique per note)
+- **Project:** name, color, archive, owner
+- **Note:** title, `contentJson` (Tiptap document), project, meeting date, members, `archivedAt`, `deletedAt`
+- **NoteMember:** name, email (unique per note)
 
-### آرشیو و حذف
+### Archive and delete
 
-| عمل | رفتار |
-|-----|--------|
-| **آرشیو** | `archivedAt` ست می‌شود، از لیست اصلی پنهان، قابل بازگردانی |
-| **حذف** | `deletedAt` ست می‌شود (soft delete)، از همه لیست‌ها پنهان |
+| Action | Behavior |
+|--------|----------|
+| **Archive** | Sets `archivedAt`, hidden from main list, restorable |
+| **Delete** | Sets `deletedAt` (soft delete), hidden from all lists |
 
 ## API
 
-| متد | مسیر |
-|-----|------|
+| Method | Path |
+|--------|------|
 | GET/POST | `/api/v1/notes` |
 | GET/PATCH/DELETE | `/api/v1/notes/:id` |
 | POST | `/api/v1/notes/:id/archive` |
@@ -36,22 +36,22 @@
 | PATCH/DELETE | `/api/v1/projects/:id` |
 | POST | `/api/v1/projects/:id/archive` |
 
-Query `GET /notes`: `includeArchived=true` برای نمایش آرشیو (فاز بعد: UI آرشیو)
+Query on `GET /notes`: `includeArchived=true` to include archived notes (next phase: archive UI)
 
-## موبایل
+## Mobile
 
-- `/notes/new` → ایجاد و redirect به editor
-- `/notes/[id]` → ادیتور Tiptap v3 (Notion-like)، پس‌زمینه canvas
-- Home → لیست یادداشت‌ها از API
-- **Swipe** روی کارت جلسه (به چپ): حذف با پس‌زمینه قرمز کم‌رنگ و متن قرمز پررنگ؛ کشیدن کامل = حذف خودکار
+- `/notes/new` - create and redirect to editor
+- `/notes/[id]` - Tiptap v3 editor (Notion-like), canvas background
+- Home - note list from API
+- **Swipe** on meeting card (left): delete with light red background and strong red text; full swipe = automatic delete
 
 ## Feature flag
 
-- `personal`: CRUD یادداشت و پروژه شخصی
-- `team`: اشتراک اعضا (فاز بعد)
-- `enterprise`: (فاز بعد)
+- `personal`: personal note and project CRUD
+- `team`: member sharing (next phase)
+- `enterprise`: (next phase)
 
-## تست
+## Tests
 
 - `notes.service.spec.ts` (unit)
-- ادیتور: ذخیره خودکار debounce 700ms
+- Editor: autosave debounce 700ms

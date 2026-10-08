@@ -1,53 +1,53 @@
-# مدیریت پروژه‌ها
+# Project Management
 
-## خلاصه
+## Summary
 
-کاربر از منوی پروفایل (آواتار بالای خانه) به **پروژه‌ها** می‌رود، پروژه می‌سازد، swipe برای حذف/ویرایش دارد، و با tap روی هر پروژه لیست جلسات همان پروژه را می‌بیند.
+From the profile menu (avatar at the top of home), the user opens **Projects**, creates projects, swipes to delete or edit, and taps a project to see that project's meeting list.
 
-## جریان کاربر
+## User flow
 
 ```
-خانه → آواتار → پروژه‌ها → لیست پروژه‌ها
-                              ├ swipe چپ: حذف
-                              ├ swipe راست: ویرایش
-                              └ tap: جزئیات + جلسات پروژه
+Home → Avatar → Projects → Project list
+                              ├ swipe left: delete
+                              ├ swipe right: edit
+                              └ tap: details + project meetings
 ```
 
-## مدل داده
+## Data model
 
-جدول `projects` (موجود):
+Existing `projects` table:
 
-| فیلد | توضیح |
-|------|--------|
-| `name` | نام پروژه (۲–۱۲۰ کاراکتر) |
-| `color` | hex اختیاری |
-| `archived_at` | آرشیو نرم |
+| Field | Description |
+|-------|-------------|
+| `name` | Project name (2-120 characters) |
+| `color` | Optional hex |
+| `archived_at` | Soft archive |
 
-یادداشت‌ها با `notes.project_id` به پروژه وصل می‌شوند (`ON DELETE SET NULL`).
+Notes link to projects via `notes.project_id` (`ON DELETE SET NULL`).
 
 ## API
 
-| Method | Route | توضیح |
-|--------|-------|--------|
-| GET | `/api/v1/projects` | لیست پروژه‌ها |
-| POST | `/api/v1/projects` | ایجاد |
-| GET | `/api/v1/projects/:id` | جزئیات + `noteCount` |
-| PATCH | `/api/v1/projects/:id` | ویرایش نام/رنگ |
-| DELETE | `/api/v1/projects/:id` | حذف |
-| GET | `/api/v1/projects/:id/meetings` | جلسات پروژه (cursor pagination) |
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/v1/projects` | List projects |
+| POST | `/api/v1/projects` | Create |
+| GET | `/api/v1/projects/:id` | Details + `noteCount` |
+| PATCH | `/api/v1/projects/:id` | Edit name/color |
+| DELETE | `/api/v1/projects/:id` | Delete |
+| GET | `/api/v1/projects/:id/meetings` | Project meetings (cursor pagination) |
 
-## کلاینت
+## Client
 
-- `ProfileMenu`: گزینه «پروژه‌ها»
-- `ProjectsScreen`: لیست + FAB + swipe
-- `ProjectDetailScreen`: جلسات پروژه
-- `ProjectEditSheet`: ایجاد/ویرایش با palette رنگ برند
-- `NoteProjectSheet`: انتساب پروژه به جلسه (ادیتور)
+- `ProfileMenu`: "Projects" option
+- `ProjectsScreen`: list + FAB + swipe
+- `ProjectDetailScreen`: project meetings
+- `ProjectEditSheet`: create/edit with brand color palette
+- `NoteProjectSheet`: assign project to meeting (editor)
 
 ## Feature flag
 
-`notes.projects` در `packages/shared` (tier: personal)
+`notes.projects` in `packages/shared` (tier: personal)
 
-## تست
+## Tests
 
 - `notes.service.spec.ts`: `listProjectMeetings`

@@ -1,21 +1,22 @@
-# زمان‌بندی جلسات (Scheduled Meetings)
+# Scheduled Meetings
 
-## خلاصه
+## Summary
 
-کاربر از داشبورد می‌تواند **جلسه جدید** بسازد:
-- **همین الان**: یادداشت فوراً باز می‌شود (`meetingDate = now`)
-- **تنظیم برای آینده**: انتخاب تاریخ شمسی + ساعت/دقیقه، سپس ایجاد یادداشت با `meetingDate` آینده
+From the dashboard, users can create a **new meeting** in two ways:
 
-یادداشت‌های زمان‌بندی‌شده **از لحظه ایجاد قابل دسترسی** هستند و در سکشن **جلسات آینده** نمایش داده می‌شوند.
+- **Start now**: The note opens immediately (`meetingDate = now`)
+- **Schedule for later**: Pick a Jalali calendar date plus hour/minute, then create a note with a future `meetingDate`
 
-## مدل داده
+Scheduled notes are **accessible from the moment they are created** and appear in the **Upcoming meetings** section.
 
-از فیلد موجود `notes.meeting_date` استفاده می‌شود. entity جداگانه Meeting نداریم (یادداشت = جلسه).
+## Data model
 
-| حالت | `meeting_date` | سکشن UI |
-|------|----------------|---------|
-| همین الان | زمان ایجاد | جلسات اخیر |
-| آینده | زمان انتخاب‌شده (> now) | جلسات آینده |
+We use the existing `notes.meeting_date` field. There is no separate Meeting entity (note = meeting).
+
+| Mode | `meeting_date` | UI section |
+|------|----------------|------------|
+| Start now | Creation time | Recent meetings |
+| Future | Selected time (> now) | Upcoming meetings |
 
 ## API
 
@@ -23,43 +24,43 @@
 
 ```json
 {
-  "title": "جلسه جدید",
+  "title": "New meeting",
   "contentJson": "",
   "meetingDate": "2026-09-01T14:30:00.000Z"
 }
 ```
 
-- بدون `meetingDate`: پیش‌فرض `now`
-- با `meetingDate`: باید **در آینده** باشد، وگرنه `400`
+- Without `meetingDate`: defaults to `now`
+- With `meetingDate`: must be **in the future**, otherwise `400`
 
 ### `PATCH /api/v1/notes/:id`
 
-- تغییر `meetingDate` با همان اعتبارسنجی آینده بودن
+- Updating `meetingDate` uses the same future-date validation
 
 ### `GET /api/v1/notes`
 
-- بدون تغییر؛ کلاینت با `splitNotesBySchedule` از `@jalase/shared` تقسیم می‌کند
+- Unchanged; the client splits results with `splitNotesBySchedule` from `@jalase/shared`
 
-## کلاینت (موبایل)
+## Client (mobile)
 
-- FAB: «جلسه جدید»
-- `NewMeetingActionSheet`: انتخاب نوع ایجاد
-- `ScheduleMeetingSheet`: wheel picker شمسی (سال/ماه/روز + ساعت/دقیقه)
-- `HomeScreen`: سکشن «جلسات آینده» فقط در صورت وجود
+- FAB: "New meeting"
+- `NewMeetingActionSheet`: choose how to create
+- `ScheduleMeetingSheet`: Jalali wheel picker (year/month/day + hour/minute)
+- `HomeScreen`: "Upcoming meetings" section only when items exist
 
-## آینده (آماده‌سازی)
+## Future (preparation)
 
-- Push reminder قبل از `meetingDate` (بدون GMS)
-- Cron برای انتقال خودکار از upcoming به recent پس از گذشت زمان
-- فیلتر `?scope=upcoming` در API برای scale
-- index DB روی `(user_id, meeting_date)` در migration production
-- recurring meetings (entity جدا)
+- Push reminder before `meetingDate` (no GMS)
+- Cron to move items from upcoming to recent after the scheduled time passes
+- API filter `?scope=upcoming` for scale
+- DB index on `(user_id, meeting_date)` in production migration
+- Recurring meetings (separate entity)
 
 ## Feature flag
 
-فعلاً tier **personal**، بدون flag جدا. برای enterprise calendar sync در آینده flag اضافه می‌شود.
+Currently **personal** tier, no separate flag. A flag will be added later for enterprise calendar sync.
 
-## تست
+## Tests
 
 - `packages/shared/src/notes/scheduling.spec.ts`
 - `apps/api/src/notes/notes.service.spec.ts` (validation + create scheduled)
