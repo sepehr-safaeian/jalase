@@ -18,6 +18,7 @@
 
 <p align="center">
   <a href="#features">Features</a> ·
+  <a href="#screenshots">Screenshots</a> ·
   <a href="#why-jalase">Why Jalase</a> ·
   <a href="#architecture">Architecture</a> ·
   <a href="#quick-start">Quick start</a> ·
@@ -25,6 +26,31 @@
   <a href="#api">API</a> ·
   <a href="#contributing">Contributing</a>
 </p>
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/04-home-empty.png" alt="Home empty state" width="220" />
+  &nbsp;
+  <img src="docs/screenshots/03-home-past.png" alt="Home with past meetings" width="220" />
+  &nbsp;
+  <img src="docs/screenshots/05-recording.png" alt="Live recording" width="220" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/01-meeting-summary.png" alt="Meeting summary" width="220" />
+  &nbsp;
+  <img src="docs/screenshots/02-share-meeting.png" alt="Share meeting sheet" width="220" />
+</p>
+
+| | |
+|---|---|
+| **Home** | Empty state walkthrough and past-meeting list |
+| **Recording** | Live capture with waveform and pause / stop controls |
+| **Notes** | Meeting summary with date, members, and project chips |
+| **Share** | Copy text, download PDF / Markdown, send via apps |
 
 ---
 
