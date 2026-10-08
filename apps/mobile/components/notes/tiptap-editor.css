@@ -1,0 +1,179 @@
+.jalase-tiptap {
+  outline: none;
+  min-height: 360px;
+  font-family: 'Vazirmatn-Regular', sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #0e0f0c;
+  background: transparent;
+  caret-color: #187a45;
+}
+
+.jalase-tiptap:focus-within {
+  outline: none;
+}
+
+.jalase-tiptap ::selection {
+  background: #d9f5e6;
+  color: #0e0f0c;
+}
+
+.jalase-tiptap * {
+  font-family: inherit;
+}
+
+.jalase-tiptap > * + * {
+  margin-top: 0.35em;
+}
+
+.jalase-tiptap p {
+  margin: 0.15em 0;
+}
+
+.jalase-tiptap h1,
+.jalase-tiptap h2,
+.jalase-tiptap h3 {
+  font-family: 'Vazirmatn-Bold', 'Vazirmatn-Regular', sans-serif;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 1.1em 0 0.35em;
+  color: #0e0f0c;
+}
+
+.jalase-tiptap h1 {
+  font-size: 1.65rem;
+}
+
+.jalase-tiptap h2 {
+  font-size: 1.25rem;
+}
+
+.jalase-tiptap h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.jalase-tiptap ul,
+.jalase-tiptap ol {
+  margin: 0.25em 0;
+  padding-right: 1.35em;
+  padding-left: 0;
+}
+
+.jalase-tiptap li {
+  margin: 0.15em 0;
+}
+
+.jalase-tiptap li p {
+  margin: 0;
+}
+
+.jalase-tiptap ul[data-type='taskList'] {
+  list-style: none;
+  padding: 0;
+  margin: 0.35em 0;
+}
+
+.jalase-tiptap ul[data-type='taskList'] li {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  gap: 0.55em;
+}
+
+.jalase-tiptap ul[data-type='taskList'] li > label {
+  flex: 0 0 auto;
+  margin-top: 0.35em;
+  user-select: none;
+}
+
+.jalase-tiptap ul[data-type='taskList'] li > label input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: #187a45;
+  cursor: pointer;
+}
+
+.jalase-tiptap ul[data-type='taskList'] li > div {
+  flex: 1 1 auto;
+}
+
+.jalase-tiptap ul[data-type='taskList'] li[data-checked='true'] > div {
+  color: #72726e;
+  text-decoration: line-through;
+}
+
+.jalase-tiptap hr {
+  border: none;
+  border-top: 1px solid #e3e3e3;
+  margin: 1.25em 0;
+}
+
+.jalase-tiptap p.is-editor-empty:first-child::before,
+.jalase-tiptap .is-empty::before {
+  color: #818179;
+  content: attr(data-placeholder);
+  float: right;
+  height: 0;
+  pointer-events: none;
+}
+
+.jalase-tiptap blockquote {
+  border-right: 3px solid #d9f5e6;
+  margin: 0.5em 0;
+  padding: 0.15em 0.85em 0.15em 0;
+  color: #454745;
+}
+
+.jalase-tiptap code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.92em;
+  background: #eaeae5;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+.jalase-tiptap pre {
+  background: #eaeae5;
+  border-radius: 8px;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+}
+
+.jalase-tiptap pre code {
+  background: none;
+  padding: 0;
+}
+
+.jalase-tiptap .ProseMirror-selectednode {
+  outline: none;
+}
+
+.jalase-live-transcript {
+  animation: jalase-fade-in 0.35s ease;
+}
+
+.jalase-live-cursor {
+  animation: jalase-cursor-blink 0.85s step-end infinite;
+}
+
+@keyframes jalase-cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes jalase-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

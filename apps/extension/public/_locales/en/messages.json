@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "Jalase"
+  },
+  "extDescription": {
+    "message": "Record and transcribe online Google Meet sessions. Notes are saved in the Jalase app."
+  },
+  "extDefaultTitle": {
+    "message": "Jalase"
+  }
+}

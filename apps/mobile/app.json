@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "Jalase",
+    "slug": "jalase",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "jalase",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "locales": {
+      "en": "./locales/en.json",
+      "fa": "./locales/fa.json"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.jalase.mobile",
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "en"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F7F7F2"
+      },
+      "package": "app.jalase.mobile",
+      "permissions": [
+        "RECORD_AUDIO",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_MICROPHONE"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png",
+      "name": "Jalase",
+      "shortName": "Jalase",
+      "lang": "en",
+      "dir": "ltr",
+      "themeColor": "#187A45",
+      "backgroundColor": "#F7F7F2",
+      "display": "standalone",
+      "startUrl": "/"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "برای انتخاب تصویر پروفایل به گالری دسترسی لازم است"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}

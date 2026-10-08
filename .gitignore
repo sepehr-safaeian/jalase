@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.expo/
+.expo-shared/
+web-build/
+*.tsbuildinfo
+apps/extension/.output/
+apps/extension/.wxt/
+
+# Environment & secrets (never commit real credentials)
+.env
+.env.*
+!.env.example
+!**/.env.example
+apps/**/.env
+apps/**/.env.local
+apps/**/.env.*.local
+
+# IDE / editor (local only)
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.cursor/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs & debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Tests & coverage
+coverage/
+.nyc_output/
+
+# Native / signing
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+android/app/debug.keystore
+
+# App runtime data
+uploads/
+.cache/
+tmp/
+temp/

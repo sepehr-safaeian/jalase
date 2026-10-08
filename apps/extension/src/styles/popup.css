@@ -1,0 +1,261 @@
+@import './tokens.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-ui);
+  background: var(--canvas);
+  color: var(--ink);
+  width: 360px;
+  min-height: 420px;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 420px;
+}
+
+.popup-root {
+  padding: 20px;
+  min-height: 380px;
+  box-sizing: border-box;
+}
+
+.popup-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.popup-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green-900);
+}
+
+.popup-tagline {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.popup-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--ink-soft);
+}
+
+.popup-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.popup-phone-field {
+  display: flex;
+  flex-direction: row;
+  direction: ltr;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  margin-bottom: 12px;
+  overflow: hidden;
+  min-height: 48px;
+}
+
+.popup-phone-field:focus-within {
+  outline: 2px solid var(--green-700);
+  outline-offset: 1px;
+}
+
+.popup-phone-prefix {
+  padding: 12px 14px;
+  border-right: 1px solid var(--border);
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.popup-input--phone {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  margin-bottom: 0;
+  border-radius: 0;
+  padding: 12px 14px;
+  text-align: left;
+  direction: ltr;
+}
+
+.popup-input--phone:focus {
+  outline: none;
+}
+
+.popup-input:focus {
+  outline: 2px solid var(--green-700);
+  outline-offset: 1px;
+}
+
+.popup-otp {
+  text-align: center;
+  letter-spacing: 0.3em;
+  font-size: 20px;
+}
+
+.popup-submit {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.popup-signout {
+  width: 100%;
+}
+
+.popup-error {
+  font-size: 13px;
+  text-align: center;
+  margin-top: 12px;
+}
+
+.popup-hint, .popup-otp-hint {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.popup-dev-hint {
+  font-size: 12px;
+  color: var(--green-900);
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.popup-user {
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.popup-back {
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  padding: 8px;
+}
+
+.popup-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 380px;
+  box-sizing: border-box;
+}
+
+.popup-loading-brand {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.popup-loading-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green-900);
+}
+
+.popup-loading-tagline {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.popup-loading-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.popup-loading-line {
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+
+.popup-loading-line--short {
+  width: 60%;
+  align-self: center;
+}
+
+.popup-loading-line--button {
+  margin-top: 4px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--green-900) 18%, var(--surface-soft));
+}
+
+.popup-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.popup-footer a {
+  font-size: 12px;
+  color: var(--ink-quiet);
+  text-decoration: none;
+}
+
+.goosha-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.goosha-btn-primary {
+  background: var(--green-900);
+  color: #fff;
+}
+
+.goosha-btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+.goosha-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.goosha-text-error {
+  color: var(--error);
+}

@@ -1,0 +1,69 @@
+.goosha-root {
+  all: initial;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.goosha-root[dir='rtl'] {
+  direction: rtl;
+}
+
+.goosha-root[dir='ltr'] {
+  direction: ltr;
+}
+
+.goosha-root *,
+.goosha-root *::before,
+.goosha-root *::after {
+  box-sizing: border-box;
+}
+
+.goosha-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 12px 20px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.goosha-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.goosha-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.goosha-btn-primary {
+  background: var(--green-900);
+  color: #fff;
+}
+
+.goosha-btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+.goosha-text-muted {
+  color: var(--ink-muted);
+}
+
+.goosha-text-error {
+  color: var(--error);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goosha-btn {
+    transition: none;
+  }
+}

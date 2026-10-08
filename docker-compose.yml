@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jalase-postgres
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: jalase
+      POSTGRES_PASSWORD: jalase_dev
+      POSTGRES_DB: jalase_dev
+    volumes:
+      - jalase_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jalase -d jalase_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  jalase_pg_data:
