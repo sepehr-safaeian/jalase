@@ -25,7 +25,7 @@ import { MetricsService } from '../observability/metrics.service.js';
 import { PipelineTimer } from '../observability/pipeline-timer.js';
 import { Note } from '../notes/entities/note.entity.js';
 import { NoteRecordingChunk } from './entities/note-recording-chunk.entity.js';
-import { AvalAiService } from './avalai.service.js';
+import { OpenAiCompatibleClient } from './openai-compatible.client.js';
 import { HybridTranscriptionPipeline } from './hybrid-transcription.pipeline.js';
 import { TranscriptRefinerService } from './transcript-refiner.service.js';
 import { AudioProcessingError } from './audio-processing.error.js';
@@ -64,7 +64,7 @@ export class TranscriptionService {
     private readonly notesRepo: Repository<Note>,
     @InjectRepository(NoteRecordingChunk)
     private readonly chunksRepo: Repository<NoteRecordingChunk>,
-    private readonly avalAi: AvalAiService,
+    private readonly asrClient: OpenAiCompatibleClient,
     private readonly hybridPipeline: HybridTranscriptionPipeline,
     private readonly transcriptRefiner: TranscriptRefinerService,
     private readonly audioSlice: AudioSliceService,
@@ -72,7 +72,8 @@ export class TranscriptionService {
     private readonly guardrails: GuardrailsService,
   ) {
     this.hybridEnabled =
-      process.env.AVALAI_HYBRID_PIPELINE !== 'false';
+      (process.env.HYBRID_PIPELINE ?? process.env.AVALAI_HYBRID_PIPELINE) !==
+      'false';
   }
 
   private logStage(
@@ -126,7 +127,7 @@ export class TranscriptionService {
   }
 
   async start(userId: string, noteId: string): Promise<StartRecordingResponse> {
-    if (!this.avalAi.isConfigured()) {
+    if (!this.asrClient.isConfigured()) {
       throw new ServiceUnavailableException(
         'سرویس رونویسی پیکربندی نشده است',
       );
@@ -187,7 +188,7 @@ export class TranscriptionService {
     durationMs?: number,
     clientSilent?: boolean,
   ): Promise<TranscriptionChunkResponse> {
-    if (!this.avalAi.isConfigured()) {
+    if (!this.asrClient.isConfigured()) {
       throw new ServiceUnavailableException(
         'سرویس رونویسی پیکربندی نشده است',
       );
@@ -232,7 +233,7 @@ export class TranscriptionService {
     audio: Buffer,
     mimeType: string,
   ): Promise<StopRecordingResponse> {
-    if (!this.avalAi.isConfigured()) {
+    if (!this.asrClient.isConfigured()) {
       throw new ServiceUnavailableException(
         'سرویس رونویسی پیکربندی نشده است',
       );

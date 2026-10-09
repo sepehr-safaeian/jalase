@@ -49,6 +49,10 @@ describe('AuthService', () => {
       sendOtp: vi.fn(),
     } as unknown as SmsService;
 
+    const mailService = {
+      sendOtp: vi.fn(),
+    };
+
     const subscriptionsService = {
       ensureFreeSubscription: vi.fn().mockResolvedValue({}),
       getSubscriptionSummary: vi.fn().mockResolvedValue({
@@ -68,6 +72,7 @@ describe('AuthService', () => {
       jwtService,
       config,
       smsService,
+      mailService as never,
       subscriptionsService as never,
     );
   });

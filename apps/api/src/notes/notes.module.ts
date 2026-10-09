@@ -17,6 +17,6 @@ import { NotesService } from './notes.service.js';
   ],
   controllers: [NotesController],
   providers: [NotesService, MeetingExtractionService],
-  exports: [NotesService],
+  exports: [NotesService, MeetingExtractionService],
 })
 export class NotesModule {}

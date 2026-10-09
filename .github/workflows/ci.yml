@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build shared
+        run: npm run build:shared
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Score latest run (if present)
+        run: |
+          if ls packages/eval/runs/*/manifest.json 1>/dev/null 2>&1; then
+            npm run eval:score -- --run latest --check
+          else
+            echo "No committed eval run yet; skipping baseline --check"
+          fi

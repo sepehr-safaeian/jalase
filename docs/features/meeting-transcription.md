@@ -9,9 +9,11 @@ Live audio capture from the browser, hybrid diarize + transcribe pipeline, speak
 ## Env
 
 ```env
-AVALAI_DIARIZE_MODEL=gpt-4o-transcribe-diarize
-AVALAI_TRANSCRIBE_MODEL=gpt-4o-transcribe
-AVALAI_HYBRID_PIPELINE=true
+DIARIZE_MODEL=gpt-4o-transcribe-diarize
+ASR_MODEL=whisper-large-v3
+HYBRID_PIPELINE=true
+LLM_API_KEY=
+LLM_BASE_URL=
 FFMPEG_PATH=   # optional, for splitting multi-speaker segments
 ```
 

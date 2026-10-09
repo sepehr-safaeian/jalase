@@ -28,6 +28,11 @@ import {
   getExtractionPrompt,
 } from '../ai/prompt-packs.js';
 import { resolveAiLocale, type AiLocale } from '../ai/prompt-locale.js';
+import {
+  assertLlmConfigured,
+  resolveLlmRuntimeConfig,
+  type LlmRuntimeConfig,
+} from '../ai/llm-config.js';
 import { GuardrailsService } from '../ai/guardrails/guardrails.service.js';
 import { MetricsService } from '../observability/metrics.service.js';
 import { PipelineTimer } from '../observability/pipeline-timer.js';
@@ -37,7 +42,7 @@ interface ChatCompletionResponse {
   choices?: Array<{ message?: { content?: string } }>;
   error?: { message?: string };
 }
-interface ExtractionRunResult {
+export interface ExtractionRunResult {
   items: string[];
   emptyMessage: string;
   usedLlm: boolean;
@@ -46,10 +51,7 @@ interface ExtractionRunResult {
 @Injectable()
 export class MeetingExtractionService {
   private readonly logger = new Logger(MeetingExtractionService.name);
-  private readonly apiKey: string;
-  private readonly baseUrl: string;
-  private readonly model: string;
-  private readonly enabled: boolean;
+  private readonly runtime: LlmRuntimeConfig;
   private readonly locale: AiLocale;
 
   constructor(
@@ -59,14 +61,26 @@ export class MeetingExtractionService {
     private readonly guardrails: GuardrailsService,
     private readonly metrics: MetricsService,
   ) {
-    this.apiKey = config.get<string>('AVALAI_API_KEY', '');
-    this.baseUrl = config.get<string>('AVALAI_BASE_URL', 'https://api.avalai.ir/v1');
-    this.model = config.get<string>('AVALAI_EXTRACT_MODEL', 'qwen3.5-flash');
-    this.enabled = config.get<string>('AVALAI_EXTRACT_ENABLED', 'true') !== 'false';
+    this.runtime = resolveLlmRuntimeConfig(config);
     this.locale = resolveAiLocale(config.get<string>('AI_LOCALE', 'en'));
   }
   isConfigured(): boolean {
-    return this.enabled && Boolean(this.apiKey.trim());
+    return (
+      this.runtime.extractEnabled &&
+      Boolean(this.runtime.apiKey.trim() && this.runtime.baseUrl.trim())
+    );
+  }
+
+  /** Offline eval entry: same extraction path without a persisted note. */
+  async extractFromTranscript(
+    kind: MeetingExtractionKind,
+    title: string,
+    transcript: string,
+  ): Promise<ExtractionRunResult> {
+    if (!this.isConfigured()) {
+      throw new ServiceUnavailableException('Smart extraction is unavailable');
+    }
+    return this.runExtraction(kind, title, transcript);
   }
   async extract(
     userId: string,
@@ -238,19 +252,20 @@ export class MeetingExtractionService {
     title: string,
     transcript: string,
   ): Promise<ReturnType<typeof parseExtractionResponse>> {
+    assertLlmConfigured(this.runtime);
     const { timeoutMs, maxTokens } = this.resolveLlmLimits(transcript);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(`${this.runtime.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.runtime.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: this.model,
-          temperature: 0.05,
+          model: this.runtime.extractModel,
+          temperature: 0,
           max_tokens: maxTokens,
           response_format: { type: 'json_object' },
           messages: [

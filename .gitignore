@@ -60,3 +60,7 @@ uploads/
 .cache/
 tmp/
 temp/
+
+# Eval corpus downloads (AMI audio + raw annotations)
+packages/eval/.data/
+

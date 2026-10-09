@@ -1,13 +1,18 @@
 export type {
-  AmiFixture,
+  AmiCatalog,
+  AmiGoldLabels,
+  AmiMeetingMeta,
   EvalReport,
   ExtractionF1Result,
   FaithfulnessResult,
-  QmSumFixture,
+  GuardrailBenchResult,
+  MeetingRunOutput,
+  RunManifest,
   WerResult,
 } from './types.js';
-export { loadAmiFixtures } from './loaders/ami.js';
-export { loadQmSumFixtures } from './loaders/qmsum.js';
+export { loadAmiCatalog, dataRoot } from './ami/catalog.js';
+export { parseAmiMeetingGold } from './ami/parse-annotations.js';
+export { fetchAmiData } from './ami/fetch-ami.js';
 export { computeWer, meanWer } from './metrics/wer.js';
 export {
   aggregateExtractionF1,
@@ -23,4 +28,9 @@ export {
   normalizeEvalText,
   tokenizeWords,
 } from './metrics/normalize.js';
-export { runBaseline } from './run-baseline.js';
+export {
+  detectPromptInjection,
+  loadPromptSuite,
+  runGuardrailBench,
+} from './score/guardrail-bench.js';
+export { scoreRun } from './score/run-score.js';

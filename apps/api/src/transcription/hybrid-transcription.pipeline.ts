@@ -2,10 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { TranscriptTurn } from '@jalase/shared';
 import { formatSpeakerLabel } from '@jalase/shared';
-import { AvalAiService, type DiarizedSegment } from './avalai.service.js';
+import {
+  OpenAiCompatibleClient,
+  type DiarizedSegment,
+} from './openai-compatible.client.js';
 import { AudioSliceService, buildTurnId } from './audio-slice.service.js';
 import { AudioProcessingError } from './audio-processing.error.js';
 import { transcriptTextsOverlap } from './transcript-dedup.util.js';
+import { resolveLlmRuntimeConfig } from '../ai/llm-config.js';
 
 export interface HybridChunkInput {
   audio: Buffer;
@@ -32,11 +36,11 @@ export class HybridTranscriptionPipeline {
   private readonly liveDiarize: boolean;
 
   constructor(
-    private readonly avalAi: AvalAiService,
+    private readonly asrClient: OpenAiCompatibleClient,
     private readonly audioSlice: AudioSliceService,
     config: ConfigService,
   ) {
-    this.liveDiarize = config.get<string>('AVALAI_LIVE_DIARIZE', 'false') === 'true';
+    this.liveDiarize = resolveLlmRuntimeConfig(config).liveDiarize;
   }
 
   /** رونویسی کامل بعد از پایان ضبط: diarize + re-transcribe روی هر segment */
@@ -57,7 +61,7 @@ export class HybridTranscriptionPipeline {
     input: HybridChunkInput,
     options: ProcessOptions,
   ): Promise<HybridChunkResult> {
-    const diarized = await this.avalAi.diarizeChunk({
+    const diarized = await this.asrClient.diarizeChunk({
       audio: input.audio,
       mimeType: input.mimeType,
       chunkIndex: input.chunkIndex,
@@ -103,7 +107,7 @@ export class HybridTranscriptionPipeline {
 
     if (resolved) {
       try {
-        const transcribed = await this.avalAi.transcribeChunk({
+        const transcribed = await this.asrClient.transcribeChunk({
           audio: resolved.audio,
           mimeType: resolved.mimeType,
           chunkIndex: input.chunkIndex,
@@ -251,7 +255,7 @@ export class HybridTranscriptionPipeline {
   private async transcribeWholeChunkFallback(
     input: HybridChunkInput,
   ): Promise<HybridChunkResult> {
-    const text = await this.avalAi.transcribeChunk({
+    const text = await this.asrClient.transcribeChunk({
       audio: input.audio,
       mimeType: input.mimeType,
       chunkIndex: input.chunkIndex,

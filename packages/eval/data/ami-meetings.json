@@ -1,0 +1,25 @@
+{
+  "corpus": "AMI Meeting Corpus",
+  "license": "CC BY 4.0",
+  "citation": "Carletta et al. (2005), The AMI Meeting Corpus: A Pre-announcement.",
+  "attributionUrl": "https://groups.inf.ed.ac.uk/ami/corpus/",
+  "annotationRelease": "ami_public_manual_1.6.2",
+  "meetings": [
+    { "id": "ES2004a", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "ES2004b", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "ES2004c", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "ES2004d", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "IS1009a", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "IS1009b", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "IS1009c", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "IS1009d", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "TS3003a", "scenario": "design", "hasAbstractiveSummary": true },
+    { "id": "TS3003b", "scenario": "design", "hasAbstractiveSummary": true }
+  ],
+  "notes": [
+    "IDs are official AMI scenario meetings with abstractive summaries.",
+    "Gold DECISIONS and ACTIONS come from AMI abstractive annotations.",
+    "Reference transcript is AMI manual words ordered by start time.",
+    "Audio is Mix-Headset; never commit audio under packages/eval/.data/."
+  ]
+}

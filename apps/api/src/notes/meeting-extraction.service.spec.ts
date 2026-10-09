@@ -100,20 +100,13 @@ describe('MeetingExtractionService', () => {
 
         const values: Record<string, string> = {
 
-          AVALAI_API_KEY: 'test-key',
-
-          AVALAI_BASE_URL: 'https://api.avalai.ir/v1',
-
-          AVALAI_EXTRACT_MODEL: 'qwen3.5-flash',
-
-          AVALAI_EXTRACT_ENABLED: 'true',
-
+          LLM_API_KEY: 'test-key',
+          LLM_BASE_URL: 'https://api.openai.com/v1',
+          EXTRACT_MODEL: 'gpt-4o-mini',
+          EXTRACT_ENABLED: 'true',
           AI_LOCALE: 'fa',
-
           DEFAULT_TIER: 'plus',
-
           NODE_ENV: 'development',
-
         };
 
         return values[key] ?? fallback ?? '';

@@ -47,7 +47,7 @@ Transcript + kind
 `POST /api/v1/notes/:id/extractions/:kind`
 
 - Requires transcript
-- LLM: AvalAI (`AVALAI_EXTRACT_MODEL`, default `qwen3.5-flash`)
+- LLM: OpenAI-compatible chat (`EXTRACT_MODEL`, requires `LLM_API_KEY` + `LLM_BASE_URL`)
 - temperature: `0.05`
 - Adaptive timeout: 30s / 60s / 90s based on transcript length
 - Output in `contentJson` via `syncNoteSection`

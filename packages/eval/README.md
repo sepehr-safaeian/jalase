@@ -1,38 +1,17 @@
 # `@jalase/eval`
 
-Offline evaluation harness for Jalase.
+Scores **Jalase system outputs**, not hand-written fixture predictions.
 
-## What it measures
+## Flow
 
-| Suite | Corpus style | Metric |
-|-------|--------------|--------|
-| WER | AMI fixtures | Word / character error rate |
-| Extractions | QMSum fixtures | Decision & next-action micro-F1 |
-| Faithfulness | QMSum fixtures | LLM-as-judge (1–5) with cached fallback |
+1. `npm run eval:fetch-ami` – download AMI annotations + Mix-Headset audio into `.data/` (git-ignored)
+2. `npm run eval:run` – run production ASR + extraction (`apps/api/scripts/eval-run.ts`); writes `runs/<run-id>/`
+3. `npm run eval:score -- --run <run-id>` – offline metrics → `results/baseline.json` (no API keys)
 
-## Commands
+Synthetic fixtures under `test/fixtures/synthetic/` are **unit tests only**.
 
-From the monorepo root:
+## Corpus
 
-```bash
-npm run eval:baseline
-npm run eval:wer
-npm run eval:extractions
-npm run eval:faithfulness
-```
+AMI Meeting Corpus, CC BY 4.0. Carletta et al. (2005), *The AMI Meeting Corpus: A Pre-announcement*.
 
-Or inside this package:
-
-```bash
-npm run eval:baseline --workspace=@jalase/eval
-```
-
-`eval:baseline` writes [`results/baseline.json`](./results/baseline.json).
-
-## Live judge
-
-Set `AVALAI_API_KEY` (and optional `AVALAI_BASE_URL` / `AVALAI_EXTRACT_MODEL`) to refresh faithfulness live. Without a key, fixtures use `cachedFaithfulness` then a token-overlap heuristic.
-
-## License note
-
-Fixtures are short, curated, AMI/QMSum-**style** meetings for CI. They are not a redistribution of the full corpora. Download official AMI / QMSum dumps separately for research-scale runs.
+Meeting list: [`data/ami-meetings.json`](./data/ami-meetings.json).

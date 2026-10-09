@@ -98,37 +98,15 @@ It is a **decision notebook**, not an AI theater.
 
 Jalase is scored like a **Decision Notebook**, not a chatbot demo: can people trust the transcript, the decisions, the next actions, and the summary?
 
-<p align="center">
-  <img src="https://img.shields.io/badge/AMI%20WER-3.2%25-187A45?style=for-the-badge" alt="AMI WER" />
-  <img src="https://img.shields.io/badge/Decision%20F1-100%25-22A35D?style=for-the-badge" alt="Decision F1" />
-  <img src="https://img.shields.io/badge/Action%20F1-100%25-22A35D?style=for-the-badge" alt="Action F1" />
-  <img src="https://img.shields.io/badge/Faithfulness-4.67%2F5-5FD693?style=for-the-badge" alt="Faithfulness" />
-</p>
-
-### Published baseline
-
-Curated **AMI-style** (ASR) and **QMSum-style** (insights) fixtures ship in [`packages/eval`](packages/eval). Numbers below come from `npm run eval:baseline` and are checked into [`packages/eval/results/baseline.json`](packages/eval/results/baseline.json).
-
-| Suite | Corpus | Metric | Result |
-|-------|--------|--------|-------:|
-| Transcription | AMI-style (3 meetings) | Weighted WER | **3.2%** |
-| Transcription | AMI-style | Weighted CER | **0.0%** |
-| Decisions | QMSum-style (3 meetings) | Micro-F1 | **100%** |
-| Next actions | QMSum-style | Micro-F1 | **100%** |
-| Summary | QMSum-style | Faithfulness (LLM-as-judge, 1–5) | **4.67** |
-
-What we measure:
-
-- **WER** – word error rate after normalize + Levenshtein alignment
-- **Extraction F1** – greedy token-Jaccard match (≥ 0.5) vs human gold decisions / actions
-- **Faithfulness** – fixed rubric LLM-as-judge; CI uses cached scores when no API key is present
+**Status.** The metric code (WER/CER, precision/recall/F1 for decisions and next actions, LLM-as-judge faithfulness) is implemented and unit-tested on small synthetic fixtures. A baseline that runs Jalase's real pipeline on public AMI meetings is in progress; results will be published here with the run date, git SHA and model names.
 
 ```bash
-npm run eval:baseline       # full report + rewrite baseline.json
-npm run eval:wer            # ASR only
-npm run eval:extractions    # decisions + next actions
-npm run eval:faithfulness   # summary judge (live if AVALAI_API_KEY is set)
+npm run eval:fetch-ami   # download AMI audio + annotations into packages/eval/.data/ (git-ignored)
+npm run eval:run         # run production ASR + extraction (needs LLM_API_KEY + LLM_BASE_URL)
+npm run eval:score -- --run <run-id>   # score a committed run folder (no API keys)
 ```
+
+Corpus attribution: [AMI Meeting Corpus](https://groups.inf.ed.ac.uk/ami/corpus/), CC BY 4.0. Carletta et al. (2005), *The AMI Meeting Corpus: A Pre-announcement*.
 
 ### Guardrails, logging, latency
 
@@ -139,8 +117,6 @@ npm run eval:faithfulness   # summary judge (live if AVALAI_API_KEY is set)
 | **Latency** | HTTP interceptor + in-memory stage stats; `GET /api/v1/health/metrics` in development (or `METRICS_ENABLED=true`) |
 
 Deep dive: [Evaluation & observability architecture](docs/architecture/evaluation-observability.md).
-
-> These fixtures are small, English, decision-heavy meetings for CI and docs. They are **not** a claim over the entire AMI or QMSum corpora. Run a full local dump separately for research-scale numbers.
 
 ---
 
@@ -219,8 +195,8 @@ Open `.env` and set at least:
 | Variable | Purpose |
 |----------|---------|
 | `JWT_SECRET` | Long random string for production |
-| `AVALAI_API_KEY` | API key for your OpenAI-compatible provider |
-| `AVALAI_BASE_URL` | Provider base URL (AvalAI, OpenAI, Groq-compatible, etc.) |
+| `LLM_API_KEY` | API key for your OpenAI-compatible provider |
+| `LLM_BASE_URL` | Provider base URL (required; no hard-coded default) |
 | `EXPO_PUBLIC_API_URL` | Client → API URL (default `http://localhost:3000/api/v1`) |
 
 See [Configuration](#configuration) for the full matrix.
@@ -304,17 +280,21 @@ Workspace-specific templates also exist for clarity:
 
 ### AI provider variables
 
-Jalase talks to **OpenAI-compatible** endpoints. AvalAI is one option; you can point `AVALAI_BASE_URL` at any compatible host.
+Jalase talks to **OpenAI-compatible** endpoints only. There is **no hard-coded default base URL**; set `LLM_BASE_URL` explicitly (OpenAI, self-hosted vLLM/Ollama, or any compatible gateway).
 
 | Key | Description |
 |-----|-------------|
-| `AVALAI_API_KEY` | Provider API key |
-| `AVALAI_BASE_URL` | e.g. `https://api.avalai.ir/v1` or OpenAI-compatible URL |
-| `AVALAI_DIARIZE_MODEL` | Speaker diarization model |
-| `AVALAI_TRANSCRIBE_MODEL` | Speech-to-text model |
-| `AVALAI_REFINE_MODEL` | Transcript review model |
-| `AVALAI_EXTRACT_MODEL` | Meeting insight extraction model |
-| `AVALAI_*_ENABLED` | Feature toggles for refine / extract |
+| `LLM_API_KEY` | Provider API key |
+| `LLM_BASE_URL` | OpenAI-compatible base URL (required) |
+| `DIARIZE_MODEL` | Speaker diarization model |
+| `ASR_MODEL` | Speech-to-text model |
+| `REFINE_MODEL` | Transcript review model |
+| `EXTRACT_MODEL` | Meeting insight extraction model |
+| `JUDGE_MODEL` | Faithfulness judge model (eval) |
+| `REFINE_ENABLED` / `EXTRACT_ENABLED` | Feature toggles |
+| `HYBRID_PIPELINE` / `LIVE_DIARIZE` | Transcription pipeline flags |
+
+Deprecated aliases `AVALAI_*` still work for one release.
 
 > **Security:** never commit a real `.env`. Rotate any key that was ever pasted into chat logs or screenshots.
 
@@ -365,10 +345,9 @@ Feature flags are defined in `packages/shared` and evaluated in the API.
 | `npm run dev:extension` | Extension dev server |
 | `npm test` | Run workspace tests |
 | `npm run lint` | Lint workspaces |
-| `npm run eval:baseline` | Publish evaluation baseline JSON |
-| `npm run eval:wer` | AMI-style WER suite |
-| `npm run eval:extractions` | Decision / action F1 suite |
-| `npm run eval:faithfulness` | Summary faithfulness suite |
+| `npm run eval:fetch-ami` | Download AMI annotations + audio into `.data/` |
+| `npm run eval:run` | Run production ASR + extraction → `packages/eval/runs/` |
+| `npm run eval:score` | Score a run → `results/baseline.json` (offline) |
 
 ---
 
@@ -391,16 +370,20 @@ Product UI stays calm. Marketing surfaces can be more expressive.
 
 Contributions welcome in any of these directions:
 
-- [x] Offline evaluation harness (WER, extraction F1, faithfulness) + structured logging
+- [x] Evaluation harness + structured logging / guardrails / latency
+- [ ] First published AMI baseline (`eval:run` + `eval:score` on 10 meetings)
 - [ ] Additional ASR / LLM providers as first-class adapters
 - [ ] Richer email delivery for OTP (SMTP / transactional mail)
 - [ ] Desktop packaging from the same RN/web codebase
 - [ ] Offline-tolerant recording queue
 - [ ] Deeper calendar integrations
 - [ ] More locales on top of `en` / `fa`
-- [ ] Full AMI / QMSum research dumps beyond curated fixtures
 
 ---
+
+## Project history
+
+Developed privately, then open-sourced in October 2026. Earlier private history is not included in this public repository.
 
 ## Contributing
 

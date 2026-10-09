@@ -64,7 +64,7 @@ Actual speech:
 
 ```
 apps/api/src/transcription/
-  avalai.service.ts              # diarize + transcribe
+  openai-compatible.client.ts    # diarize + transcribe
   audio-slice.service.ts         # ffmpeg segment extraction
   hybrid-transcription.pipeline.ts
   transcription.service.ts       # orchestration + persistence
@@ -76,9 +76,11 @@ packages/shared/src/notes/
 ### Env
 
 ```env
-AVALAI_DIARIZE_MODEL=gpt-4o-transcribe-diarize
-AVALAI_TRANSCRIBE_MODEL=gpt-4o-transcribe
-AVALAI_HYBRID_PIPELINE=true
+DIARIZE_MODEL=gpt-4o-transcribe-diarize
+ASR_MODEL=whisper-large-v3
+HYBRID_PIPELINE=true
+LLM_API_KEY=
+LLM_BASE_URL=
 ```
 
 ### Feature flag

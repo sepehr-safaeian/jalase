@@ -2,21 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { judgeFaithfulness } from './faithfulness-judge.js';
 
 describe('judgeFaithfulness', () => {
-  it('uses cached scores when live judge is disabled', async () => {
+  it('uses heuristic support ratio offline', async () => {
     const result = await judgeFaithfulness({
-      meetingId: 'm1',
-      transcript: 'We decided to ship next week.',
-      summaryItems: ['Ship next week'],
-      cached: { score: 5, rationale: 'cached' },
-      allowLive: false,
-    });
-    expect(result.source).toBe('cached');
-    expect(result.score).toBe(5);
-  });
-
-  it('falls back to heuristic support ratio', async () => {
-    const result = await judgeFaithfulness({
-      meetingId: 'm2',
+      meetingId: 'synthetic-03',
       transcript:
         'The team approved the marketing budget increase and froze hiring until May.',
       summaryItems: [
@@ -26,6 +14,17 @@ describe('judgeFaithfulness', () => {
       allowLive: false,
     });
     expect(result.source).toBe('heuristic');
-    expect(result.score).toBeGreaterThanOrEqual(4);
+    expect(result.supportedRate).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it('returns absent for empty summaries', async () => {
+    const result = await judgeFaithfulness({
+      meetingId: 'empty',
+      transcript: 'Anything',
+      summaryItems: [],
+      allowLive: false,
+    });
+    expect(result.source).toBe('absent');
+    expect(result.itemCount).toBe(0);
   });
 });

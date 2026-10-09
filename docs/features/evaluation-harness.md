@@ -2,32 +2,29 @@
 
 ## Summary
 
-Offline quality suite in `@jalase/eval` for transcription WER (AMI-style fixtures), decision / next-action F1 (QMSum-style fixtures), and summary faithfulness via LLM-as-judge with cached baseline fallback.
+Offline scoring of **Jalase production outputs** on AMI Meeting Corpus meetings. Synthetic fixtures under `packages/eval/test/fixtures/synthetic/` are unit tests only and never appear in README metrics.
 
 ## Commands
 
 ```bash
-npm run eval:baseline       # full report → results/baseline.json
-npm run eval:wer            # ASR WER only
-npm run eval:extractions    # decisions + next_actions F1
-npm run eval:faithfulness   # summary judge (live or cached)
+npm run eval:fetch-ami              # AMI annotations + Mix-Headset → packages/eval/.data/
+npm run eval:run                    # production ASR + extraction → packages/eval/runs/<id>/
+npm run eval:score -- --run <id>    # offline metrics → results/baseline.json
+npm run eval:score -- --run latest --check
 ```
 
-## Feature flag
+## Pipeline
 
-N/A (offline package). Runtime quality gates use `ai.guardrails`.
+1. `apps/api/scripts/eval-run.ts` boots Nest and calls `HybridTranscriptionPipeline` + `MeetingExtractionService.extractFromTranscript`
+2. Run folder stores raw ASR, cleaned transcript, decisions, next actions, summary, latency
+3. `eval:score` compares against AMI gold (manual words + abstractive DECISIONS/ACTIONS)
 
-## Layout
+## Corpus
 
-| Path | Role |
-|------|------|
-| `packages/eval/fixtures/ami/` | Reference + hypothesis transcripts for WER |
-| `packages/eval/fixtures/qmsum/` | Gold summary / decisions / actions |
-| `packages/eval/results/baseline.json` | Published numbers for README |
-| `packages/eval/src/metrics/` | Scorers |
+AMI Meeting Corpus, CC BY 4.0. Carletta et al. (2005). List: `packages/eval/data/ami-meetings.json`.
 
 ## Security
 
-- Fixtures contain no real user data
-- Live judge uses `AVALAI_API_KEY` only when present; never required for CI
-- Do not commit provider responses that include secrets
+- Never commit `packages/eval/.data/` (audio)
+- Run manifests may be committed (text only)
+- Live judge needs `LLM_API_KEY` + `LLM_BASE_URL`; scoring does not

@@ -1,0 +1,7 @@
+﻿{
+  "id": "synthetic-03",
+  "title": "Product sync",
+  "transcript": "Alex: We need to ship the beta by March fifteenth. Sam: Agreed. Decision: we cut dark mode from beta. Sam: I will own the onboarding rewrite and send a draft on Monday.",
+  "gold": { "summary": ["Beta ship date locked for March fifteenth", "Dark mode deferred from beta"], "decisions": ["Ship beta by March fifteenth", "Cut dark mode from the beta release"], "next_actions": ["Sam owns onboarding rewrite draft by Monday"] },
+  "predicted": { "summary": ["Beta is scheduled for March fifteenth", "Dark mode is deferred from beta"], "decisions": ["Ship the beta by March fifteenth", "Remove dark mode from beta"], "next_actions": ["Sam owns onboarding rewrite draft by Monday"] }
+}

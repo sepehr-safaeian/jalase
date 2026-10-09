@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Offline evaluation harness for Jalase transcription and meeting insights",
+  "description": "Evaluation harness that scores Jalase production outputs on AMI meetings",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -16,10 +16,8 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
-    "eval:baseline": "tsx src/run-baseline.ts",
-    "eval:wer": "tsx src/run-baseline.ts --suite=wer",
-    "eval:extractions": "tsx src/run-baseline.ts --suite=extractions",
-    "eval:faithfulness": "tsx src/run-baseline.ts --suite=faithfulness"
+    "eval:fetch-ami": "tsx src/ami/fetch-ami.ts",
+    "eval:score": "tsx src/score/run-score.ts"
   },
   "dependencies": {
     "@jalase/shared": "*"

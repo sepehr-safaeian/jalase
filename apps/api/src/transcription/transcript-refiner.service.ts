@@ -9,6 +9,11 @@ import {
   type AiLocale,
 } from '../ai/prompt-locale.js';
 import {
+  assertLlmConfigured,
+  resolveLlmRuntimeConfig,
+  type LlmRuntimeConfig,
+} from '../ai/llm-config.js';
+import {
   applyReviewedTurns,
   parseReviewJson,
   type ReviewedTurnPayload,
@@ -24,26 +29,17 @@ const REVIEW_TIMEOUT_MS = 90_000;
 @Injectable()
 export class TranscriptRefinerService {
   private readonly logger = new Logger(TranscriptRefinerService.name);
-  private readonly apiKey: string;
-  private readonly baseUrl: string;
-  private readonly model: string;
-  private readonly enabled: boolean;
+  private readonly runtime: LlmRuntimeConfig;
 
   constructor(private readonly config: ConfigService) {
-    this.apiKey = this.config.get<string>('AVALAI_API_KEY', '');
-    this.baseUrl = this.config.get<string>(
-      'AVALAI_BASE_URL',
-      'https://api.avalai.ir/v1',
-    );
-    this.model = this.config.get<string>(
-      'AVALAI_REFINE_MODEL',
-      'qwen3.5-flash',
-    );
-    this.enabled = this.config.get<string>('AVALAI_REFINE_ENABLED', 'true') !== 'false';
+    this.runtime = resolveLlmRuntimeConfig(config);
   }
 
   isConfigured(): boolean {
-    return this.enabled && Boolean(this.apiKey.trim());
+    return (
+      this.runtime.refineEnabled &&
+      Boolean(this.runtime.apiKey.trim() && this.runtime.baseUrl.trim())
+    );
   }
 
   async reviewTurns(
@@ -109,18 +105,19 @@ export class TranscriptRefinerService {
         : 'ASR transcript for review:';
 
     try {
+      assertLlmConfigured(this.runtime);
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), REVIEW_TIMEOUT_MS);
 
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(`${this.runtime.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.runtime.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: this.model,
-          temperature: 0.1,
+          model: this.runtime.refineModel,
+          temperature: 0,
           max_tokens: 4096,
           response_format: { type: 'json_object' },
           messages: [
@@ -152,7 +149,7 @@ export class TranscriptRefinerService {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.warn(
-        `Review error (${this.model}): ${message}; using ASR text without review`,
+        `Review error (${this.runtime.refineModel}): ${message}; using ASR text without review`,
       );
       return [];
     }

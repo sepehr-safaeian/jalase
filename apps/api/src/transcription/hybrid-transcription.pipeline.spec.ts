@@ -19,7 +19,7 @@ describe('HybridTranscriptionPipeline', () => {
       audioSlice as never,
       {
         get: vi.fn((key: string, fallback?: string) => {
-          if (key === 'AVALAI_LIVE_DIARIZE') {
+          if (key === 'LIVE_DIARIZE' || key === 'AVALAI_LIVE_DIARIZE') {
             return liveDiarize ? 'true' : 'false';
           }
           return fallback;

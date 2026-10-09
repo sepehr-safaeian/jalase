@@ -1,16 +1,14 @@
 import type { FaithfulnessResult } from '../types.js';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export const FAITHFULNESS_RUBRIC = `
-You are evaluating meeting summary faithfulness.
-Score from 1 to 5:
-5 = fully supported by the transcript, no invented facts
-4 = minor omissions only, no material hallucination
-3 = mostly faithful with one soft overclaim
-2 = multiple unsupported claims
-1 = largely fabricated or unrelated
+const HERE = dirname(fileURLToPath(import.meta.url));
 
-Respond with JSON only: {"score": <1-5>, "rationale": "<short>"}.
-`.trim();
+export const FAITHFULNESS_RUBRIC = readFileSync(
+  join(HERE, '../../rubrics/faithfulness-v1.md'),
+  'utf8',
+);
 
 interface ChatCompletionResponse {
   choices?: Array<{ message?: { content?: string } }>;
@@ -25,14 +23,17 @@ function heuristicFaithfulness(
   if (!summaryItems.length) {
     return {
       meetingId,
-      score: 3,
-      rationale: 'Empty summary; neutral heuristic score',
-      source: 'heuristic',
+      meanScore: 0,
+      supportedRate: 0,
+      itemCount: 0,
+      source: 'absent',
+      judgeModel: null,
     };
   }
 
   const transcriptLower = transcript.toLowerCase();
   let supported = 0;
+  let scoreSum = 0;
   for (const item of summaryItems) {
     const words = item
       .toLowerCase()
@@ -41,39 +42,56 @@ function heuristicFaithfulness(
       .filter((w) => w.length > 3);
     if (!words.length) continue;
     const hits = words.filter((w) => transcriptLower.includes(w)).length;
-    if (hits / words.length >= 0.45) supported += 1;
+    const ratio = hits / words.length;
+    const score =
+      ratio >= 0.9 ? 5 : ratio >= 0.75 ? 4 : ratio >= 0.5 ? 3 : ratio >= 0.3 ? 2 : 1;
+    scoreSum += score;
+    if (score >= 4) supported += 1;
   }
-
-  const ratio = supported / summaryItems.length;
-  const score =
-    ratio >= 0.9 ? 5 : ratio >= 0.75 ? 4 : ratio >= 0.5 ? 3 : ratio >= 0.3 ? 2 : 1;
 
   return {
     meetingId,
-    score,
-    rationale: `Heuristic token support ratio=${ratio.toFixed(2)}`,
+    meanScore: scoreSum / summaryItems.length,
+    supportedRate: supported / summaryItems.length,
+    itemCount: summaryItems.length,
     source: 'heuristic',
+    judgeModel: null,
   };
 }
 
-function parseJudgeContent(content: string): { score: number; rationale: string } {
+function parseJudgeContent(content: string): {
+  meanScore: number;
+  supportedRate: number;
+  itemCount: number;
+} {
   const trimmed = content.trim();
   const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('Judge response missing JSON object');
   }
   const parsed = JSON.parse(jsonMatch[0]) as {
-    score?: unknown;
-    rationale?: unknown;
+    meanScore?: unknown;
+    items?: Array<{ score?: unknown; supported?: unknown }>;
   };
-  const score = Number(parsed.score);
-  if (!Number.isFinite(score) || score < 1 || score > 5) {
+  if (Array.isArray(parsed.items) && parsed.items.length) {
+    const scores = parsed.items.map((item) => Number(item.score) || 1);
+    const supported = parsed.items.filter(
+      (item) => item.supported === true || Number(item.score) >= 4,
+    ).length;
+    return {
+      meanScore: scores.reduce((a, b) => a + b, 0) / scores.length,
+      supportedRate: supported / parsed.items.length,
+      itemCount: parsed.items.length,
+    };
+  }
+  const meanScore = Number(parsed.meanScore);
+  if (!Number.isFinite(meanScore)) {
     throw new Error('Judge score out of range');
   }
   return {
-    score: Math.round(score),
-    rationale:
-      typeof parsed.rationale === 'string' ? parsed.rationale : 'No rationale',
+    meanScore,
+    supportedRate: meanScore >= 4 ? 1 : 0,
+    itemCount: 1,
   };
 }
 
@@ -81,7 +99,6 @@ export async function judgeFaithfulness(options: {
   meetingId: string;
   transcript: string;
   summaryItems: string[];
-  cached?: { score: number; rationale: string };
   apiKey?: string;
   baseUrl?: string;
   model?: string;
@@ -91,14 +108,13 @@ export async function judgeFaithfulness(options: {
     meetingId,
     transcript,
     summaryItems,
-    cached,
     apiKey,
-    baseUrl = 'https://api.avalai.ir/v1',
-    model = 'qwen3.5-flash',
+    baseUrl,
+    model = 'gpt-4o-mini',
     allowLive = true,
   } = options;
 
-  if (allowLive && apiKey?.trim()) {
+  if (allowLive && apiKey?.trim() && baseUrl?.trim()) {
     try {
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
@@ -133,22 +149,15 @@ export async function judgeFaithfulness(options: {
       const parsed = parseJudgeContent(content);
       return {
         meetingId,
-        score: parsed.score,
-        rationale: parsed.rationale,
+        meanScore: parsed.meanScore,
+        supportedRate: parsed.supportedRate,
+        itemCount: parsed.itemCount,
         source: 'live',
+        judgeModel: model,
       };
     } catch {
-      // Fall through to cached / heuristic
+      // Fall through to heuristic
     }
-  }
-
-  if (cached) {
-    return {
-      meetingId,
-      score: cached.score,
-      rationale: cached.rationale,
-      source: 'cached',
-    };
   }
 
   return heuristicFaithfulness(transcript, summaryItems, meetingId);
